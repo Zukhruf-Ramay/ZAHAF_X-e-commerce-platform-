@@ -1,0 +1,315 @@
+[
+  {
+    "name": "iPhone 15 Pro Max",
+    "searchTerm": "iPhone 15 Pro Max",
+    "images": [
+      "https://images.unsplash.com/photo-1695822822491-d92cee704368?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGhvbmUlMjAxNSUyMFBybyUyME1heHxlbnwwfDJ8fHwxNzc4NDA4ODE3fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1695823018812-c684c980ede6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxpUGhvbmUlMjAxNSUyMFBybyUyME1heHxlbnwwfDJ8fHwxNzc4NDA4ODE3fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1695822958645-b2b058159215?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxpUGhvbmUlMjAxNSUyMFBybyUyME1heHxlbnwwfDJ8fHwxNzc4NDA4ODE3fDA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1695822822491-d92cee704368?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGhvbmUlMjAxNSUyMFBybyUyME1heHxlbnwwfDJ8fHwxNzc4NDA4ODE3fDA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Samsung Galaxy S24 Ultra",
+    "searchTerm": "Samsung Galaxy S24 Ultra",
+    "images": [
+      "https://images.unsplash.com/photo-1597762470488-3877b1f538c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTYW1zdW5nJTIwR2FsYXh5JTIwUzI0JTIwVWx0cmF8ZW58MHwyfHx8MTc3ODQwODgxOHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1597762866812-adbae77bb7b4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxTYW1zdW5nJTIwR2FsYXh5JTIwUzI0JTIwVWx0cmF8ZW58MHwyfHx8MTc3ODQwODgxOHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1615265744588-6710f263447b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxTYW1zdW5nJTIwR2FsYXh5JTIwUzI0JTIwVWx0cmF8ZW58MHwyfHx8MTc3ODQwODgxOHww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1597762470488-3877b1f538c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTYW1zdW5nJTIwR2FsYXh5JTIwUzI0JTIwVWx0cmF8ZW58MHwyfHx8MTc3ODQwODgxOHww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Google Pixel 8 Pro",
+    "searchTerm": "Google Pixel 8 Pro",
+    "images": [
+      "https://images.unsplash.com/photo-1715702732514-4bfd6ae66ac4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxHb29nbGUlMjBQaXhlbCUyMDglMjBQcm98ZW58MHwyfHx8MTc3ODQwODgxOXww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1706426629246-2a3c3e3e3ff2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxHb29nbGUlMjBQaXhlbCUyMDglMjBQcm98ZW58MHwyfHx8MTc3ODQwODgxOXww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1695753456538-3d29fa0a4ba0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxHb29nbGUlMjBQaXhlbCUyMDglMjBQcm98ZW58MHwyfHx8MTc3ODQwODgxOXww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1715702732514-4bfd6ae66ac4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxHb29nbGUlMjBQaXhlbCUyMDglMjBQcm98ZW58MHwyfHx8MTc3ODQwODgxOXww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "OnePlus 12",
+    "searchTerm": "OnePlus 12",
+    "images": [
+      "https://images.unsplash.com/photo-1765551097111-724e1a5cdf8f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxPbmVQbHVzJTIwMTJ8ZW58MHwyfHx8MTc3ODQwODgyMHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1773293915418-fb03a80120a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxPbmVQbHVzJTIwMTJ8ZW58MHwyfHx8MTc3ODQwODgyMHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1603129468615-8e7831c49f12?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxPbmVQbHVzJTIwMTJ8ZW58MHwyfHx8MTc3ODQwODgyMHww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1765551097111-724e1a5cdf8f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxPbmVQbHVzJTIwMTJ8ZW58MHwyfHx8MTc3ODQwODgyMHww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Xiaomi 14 Ultra",
+    "searchTerm": "Xiaomi 14 Ultra",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Nothing Phone 2",
+    "searchTerm": "Nothing Phone 2",
+    "images": [
+      "https://images.unsplash.com/photo-1663792573804-0347dfaffdab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxOb3RoaW5nJTIwUGhvbmUlMjAyfGVufDB8Mnx8fDE3Nzg0MDg4MjN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1756487564693-5d5f4c196fd5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxOb3RoaW5nJTIwUGhvbmUlMjAyfGVufDB8Mnx8fDE3Nzg0MDg4MjN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1685613778954-b34985300bd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxOb3RoaW5nJTIwUGhvbmUlMjAyfGVufDB8Mnx8fDE3Nzg0MDg4MjN8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1663792573804-0347dfaffdab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxOb3RoaW5nJTIwUGhvbmUlMjAyfGVufDB8Mnx8fDE3Nzg0MDg4MjN8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Motorola Edge 50 Ultra",
+    "searchTerm": "Motorola phone",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Vivo X100 Pro",
+    "searchTerm": "Vivo phone",
+    "images": [
+      "https://images.unsplash.com/photo-1755318535396-cdb062dc60bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxWaXZvJTIwcGhvbmV8ZW58MHwyfHx8MTc3ODQwODgyNXww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1777029323531-d514d4b79f0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxWaXZvJTIwcGhvbmV8ZW58MHwyfHx8MTc3ODQwODgyNXww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1746366782635-aabca81d2719?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxWaXZvJTIwcGhvbmV8ZW58MHwyfHx8MTc3ODQwODgyNXww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1755318535396-cdb062dc60bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxWaXZvJTIwcGhvbmV8ZW58MHwyfHx8MTc3ODQwODgyNXww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Asus ROG Phone 8",
+    "searchTerm": "gaming phone",
+    "images": [
+      "https://images.unsplash.com/photo-1665608130535-d9a71bce53b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBwaG9uZXxlbnwwfDJ8fHwxNzc4NDA4ODI1fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1694837172107-9546b2d77cad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxnYW1pbmclMjBwaG9uZXxlbnwwfDJ8fHwxNzc4NDA4ODI1fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1654621198651-fe1baffcef76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxnYW1pbmclMjBwaG9uZXxlbnwwfDJ8fHwxNzc4NDA4ODI1fDA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1665608130535-d9a71bce53b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBwaG9uZXxlbnwwfDJ8fHwxNzc4NDA4ODI1fDA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "iPhone 15 Plus",
+    "searchTerm": "iPhone 15",
+    "images": [
+      "https://images.unsplash.com/photo-1697284959152-32ef13855932?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGhvbmUlMjAxNXxlbnwwfDJ8fHwxNzc4NDA4ODI2fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1739617148480-f7bb4eb33c2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxpUGhvbmUlMjAxNXxlbnwwfDJ8fHwxNzc4NDA4ODI2fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1697284958322-94c0750e35e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxpUGhvbmUlMjAxNXxlbnwwfDJ8fHwxNzc4NDA4ODI2fDA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1697284959152-32ef13855932?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGhvbmUlMjAxNXxlbnwwfDJ8fHwxNzc4NDA4ODI2fDA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "MacBook Pro 14 M3 Pro",
+    "searchTerm": "MacBook Pro",
+    "images": [
+      "https://images.unsplash.com/photo-1569770218135-bea267ed7e84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxNYWNCb29rJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mjd8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1606248897020-696650b29ee1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxNYWNCb29rJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mjd8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1606248896999-387b3a9f621c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxNYWNCb29rJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mjd8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1569770218135-bea267ed7e84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxNYWNCb29rJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mjd8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Dell XPS 15",
+    "searchTerm": "Dell XPS",
+    "images": [
+      "https://images.unsplash.com/photo-1720556405438-d67f0f9ecd44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxEZWxsJTIwWFBTfGVufDB8Mnx8fDE3Nzg0MDg4Mjh8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1720556405438-d67f0f9ecd44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxEZWxsJTIwWFBTfGVufDB8Mnx8fDE3Nzg0MDg4Mjh8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "HP Spectre x360",
+    "searchTerm": "HP laptop",
+    "images": [
+      "https://images.unsplash.com/photo-1729370775808-aab21a6b7039?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxIUCUyMGxhcHRvcHxlbnwwfDJ8fHwxNzc4NDA4ODI5fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1729496293008-0794382070c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxIUCUyMGxhcHRvcHxlbnwwfDJ8fHwxNzc4NDA4ODI5fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1729496281796-8a86a171939b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxIUCUyMGxhcHRvcHxlbnwwfDJ8fHwxNzc4NDA4ODI5fDA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1729370775808-aab21a6b7039?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxIUCUyMGxhcHRvcHxlbnwwfDJ8fHwxNzc4NDA4ODI5fDA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Lenovo Legion 5 Pro",
+    "searchTerm": "gaming laptop",
+    "images": [
+      "https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBsYXB0b3B8ZW58MHwyfHx8MTc3ODQwODgzMHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1609980829283-b8de7d211574?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxnYW1pbmclMjBsYXB0b3B8ZW58MHwyfHx8MTc3ODQwODgzMHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1609980829355-b37d3a06f02c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxnYW1pbmclMjBsYXB0b3B8ZW58MHwyfHx8MTc3ODQwODgzMHww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBsYXB0b3B8ZW58MHwyfHx8MTc3ODQwODgzMHww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "MacBook Air M2",
+    "searchTerm": "MacBook Air",
+    "images": [
+      "https://images.unsplash.com/photo-1606248897732-2c5ffe759c04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxNYWNCb29rJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4MzF8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1493020258366-be3ead1b3027?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxNYWNCb29rJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4MzF8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1606248897020-696650b29ee1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxNYWNCb29rJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4MzF8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1606248897732-2c5ffe759c04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxNYWNCb29rJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4MzF8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Asus Zenbook 14 OLED",
+    "searchTerm": "Asus Zenbook",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Microsoft Surface Laptop 5",
+    "searchTerm": "Microsoft Surface",
+    "images": [
+      "https://images.unsplash.com/photo-1645717558647-5290516259c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxNaWNyb3NvZnQlMjBTdXJmYWNlfGVufDB8Mnx8fDE3Nzg0MDg4MzN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1572662073398-afd34ca1f866?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxNaWNyb3NvZnQlMjBTdXJmYWNlfGVufDB8Mnx8fDE3Nzg0MDg4MzN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1576057122708-9608db46b2f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxNaWNyb3NvZnQlMjBTdXJmYWNlfGVufDB8Mnx8fDE3Nzg0MDg4MzN8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1645717558647-5290516259c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxNaWNyb3NvZnQlMjBTdXJmYWNlfGVufDB8Mnx8fDE3Nzg0MDg4MzN8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Acer Swift Go 14",
+    "searchTerm": "Acer laptop",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Razer Blade 14",
+    "searchTerm": "Razer Blade",
+    "images": [
+      "https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxSYXplciUyMEJsYWRlfGVufDB8Mnx8fDE3Nzg0MDg4MzV8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1622649755106-1f61a6b1b445?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxSYXplciUyMEJsYWRlfGVufDB8Mnx8fDE3Nzg0MDg4MzV8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxSYXplciUyMEJsYWRlfGVufDB8Mnx8fDE3Nzg0MDg4MzV8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "LG Gram 17",
+    "searchTerm": "LG laptop",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Sony WH-1000XM5",
+    "searchTerm": "Sony headphones",
+    "images": [
+      "https://images.unsplash.com/photo-1689872072441-5aed6df99448?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTb255JTIwaGVhZHBob25lc3xlbnwwfDJ8fHwxNzc4NDA4ODM4fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1642622039751-f74f2d1a0280?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxTb255JTIwaGVhZHBob25lc3xlbnwwfDJ8fHwxNzc4NDA4ODM4fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1598900863662-da1c3e6dd9d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxTb255JTIwaGVhZHBob25lc3xlbnwwfDJ8fHwxNzc4NDA4ODM4fDA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1689872072441-5aed6df99448?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTb255JTIwaGVhZHBob25lc3xlbnwwfDJ8fHwxNzc4NDA4ODM4fDA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Apple AirPods Pro 2",
+    "searchTerm": "AirPods Pro",
+    "images": [
+      "https://images.unsplash.com/photo-1624258919367-5dc28f5dc293?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxBaXJQb2RzJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mzl8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1593442607435-e4e34991b210?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxBaXJQb2RzJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mzl8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1656068566049-67e3c04fd4ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxBaXJQb2RzJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mzl8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1624258919367-5dc28f5dc293?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxBaXJQb2RzJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4Mzl8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Bose QuietComfort Ultra",
+    "searchTerm": "Bose headphones",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Samsung Galaxy Buds2 Pro",
+    "searchTerm": "Samsung earbuds",
+    "images": [],
+    "mainImage": null
+  },
+  {
+    "name": "Logitech MX Master 3S",
+    "searchTerm": "Logitech mouse",
+    "images": [
+      "https://images.unsplash.com/photo-1615253067487-91c1bfb00643?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxMb2dpdGVjaCUyMG1vdXNlfGVufDB8Mnx8fDE3Nzg0MDg4NDF8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1619138603166-ce3fe1ffdc0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxMb2dpdGVjaCUyMG1vdXNlfGVufDB8Mnx8fDE3Nzg0MDg4NDF8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1763905180945-977cd687f7f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxMb2dpdGVjaCUyMG1vdXNlfGVufDB8Mnx8fDE3Nzg0MDg4NDF8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1615253067487-91c1bfb00643?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxMb2dpdGVjaCUyMG1vdXNlfGVufDB8Mnx8fDE3Nzg0MDg4NDF8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Razer BlackWidow V4 Pro",
+    "searchTerm": "Razer keyboard",
+    "images": [
+      "https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxSYXplciUyMGtleWJvYXJkfGVufDB8Mnx8fDE3Nzg0MDg4NDJ8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1622649755106-1f61a6b1b445?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxSYXplciUyMGtleWJvYXJkfGVufDB8Mnx8fDE3Nzg0MDg4NDJ8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxSYXplciUyMGtleWJvYXJkfGVufDB8Mnx8fDE3Nzg0MDg4NDJ8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Apple Watch Series 9",
+    "searchTerm": "Apple Watch",
+    "images": [
+      "https://images.unsplash.com/photo-1704942968209-6c1e05ef3f95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxBcHBsZSUyMFdhdGNofGVufDB8Mnx8fDE3Nzg0MDg4NDN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1655634428631-cfda6f644b37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxBcHBsZSUyMFdhdGNofGVufDB8Mnx8fDE3Nzg0MDg4NDN8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1614480909030-bda0898900a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxBcHBsZSUyMFdhdGNofGVufDB8Mnx8fDE3Nzg0MDg4NDN8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1704942968209-6c1e05ef3f95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxBcHBsZSUyMFdhdGNofGVufDB8Mnx8fDE3Nzg0MDg4NDN8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Samsung Galaxy Watch 6 Classic",
+    "searchTerm": "Samsung Watch",
+    "images": [
+      "https://images.unsplash.com/photo-1590929382053-747686bfab75?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTYW1zdW5nJTIwV2F0Y2h8ZW58MHwyfHx8MTc3ODQwODg0NHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1592925003560-dd1cea5b58e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxTYW1zdW5nJTIwV2F0Y2h8ZW58MHwyfHx8MTc3ODQwODg0NHww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1571127434756-9d1340c674ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxTYW1zdW5nJTIwV2F0Y2h8ZW58MHwyfHx8MTc3ODQwODg0NHww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1590929382053-747686bfab75?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTYW1zdW5nJTIwV2F0Y2h8ZW58MHwyfHx8MTc3ODQwODg0NHww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Anker 737 Power Bank",
+    "searchTerm": "power bank",
+    "images": [
+      "https://images.unsplash.com/photo-1706275399494-fb26bbc5da63?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxwb3dlciUyMGJhbmt8ZW58MHwyfHx8MTc3ODQwODg0NXww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1706275400998-7fc21c8cd8ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxwb3dlciUyMGJhbmt8ZW58MHwyfHx8MTc3ODQwODg0NXww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1706275399524-813e89914e43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxwb3dlciUyMGJhbmt8ZW58MHwyfHx8MTc3ODQwODg0NXww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1706275399494-fb26bbc5da63?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxwb3dlciUyMGJhbmt8ZW58MHwyfHx8MTc3ODQwODg0NXww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "DJI Osmo Mobile 6",
+    "searchTerm": "DJI gimbal",
+    "images": [
+      "https://images.unsplash.com/photo-1643917367643-d546f2c00f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxESkklMjBnaW1iYWx8ZW58MHwyfHx8MTc3ODQwODg0Nnww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1670946021911-17c79d9f8d8b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxESkklMjBnaW1iYWx8ZW58MHwyfHx8MTc3ODQwODg0Nnww&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1670946022550-155e6e7f61d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxESkklMjBnaW1iYWx8ZW58MHwyfHx8MTc3ODQwODg0Nnww&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1643917367643-d546f2c00f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxESkklMjBnaW1iYWx8ZW58MHwyfHx8MTc3ODQwODg0Nnww&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "iPad Pro 12.9 M2",
+    "searchTerm": "iPad Pro",
+    "images": [
+      "https://images.unsplash.com/photo-1645669141400-4f3f0350585a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGFkJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1713492664635-1363f44734ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxpUGFkJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1630332399188-bb630fdd68d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxpUGFkJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1645669141400-4f3f0350585a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGFkJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Samsung Galaxy Tab S9 Ultra",
+    "searchTerm": "Samsung tablet",
+    "images": [
+      "https://images.unsplash.com/photo-1665057538466-c2d0e443a242?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTYW1zdW5nJTIwdGFibGV0fGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1597762470488-3877b1f538c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxTYW1zdW5nJTIwdGFibGV0fGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1615264952739-555010f3b29b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxTYW1zdW5nJTIwdGFibGV0fGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1665057538466-c2d0e443a242?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTYW1zdW5nJTIwdGFibGV0fGVufDB8Mnx8fDE3Nzg0MDg4NDh8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "iPad Air 5 M1",
+    "searchTerm": "iPad Air",
+    "images": [
+      "https://images.unsplash.com/photo-1630331528526-7d04c6eb463f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGFkJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1630332399188-bb630fdd68d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxpUGFkJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1645669141400-4f3f0350585a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwzfHxpUGFkJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1630331528526-7d04c6eb463f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxpUGFkJTIwQWlyfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Microsoft Surface Pro 9",
+    "searchTerm": "Surface Pro",
+    "images": [
+      "https://images.unsplash.com/photo-1576057122708-9608db46b2f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTdXJmYWNlJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1576057121845-85eca73ce825?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwyfHxTdXJmYWNlJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400"
+    ],
+    "mainImage": "https://images.unsplash.com/photo-1576057122708-9608db46b2f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDc0MDZ8MHwxfHNlYXJjaHwxfHxTdXJmYWNlJTIwUHJvfGVufDB8Mnx8fDE3Nzg0MDg4NTB8MA&ixlib=rb-4.1.0&q=80&w=400"
+  },
+  {
+    "name": "Google Pixel Watch 2",
+    "searchTerm": "Pixel Watch",
+    "images": [],
+    "mainImage": null
+  }
+]
