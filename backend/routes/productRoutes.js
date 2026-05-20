@@ -1,5 +1,6 @@
 import express from 'express'
 import Product from '../models/Product.js'
+import { protect, admin } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -25,14 +26,8 @@ router.get('/:id', async (req, res) => {
 })
 
 // CREATE product (Admin only)
-router.post('/', async (req, res) => {
+router.post('/', protect, admin, async (req, res) => {
   try {
-    const clerkId = req.headers['x-clerk-id']
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'Unauthorized - No Clerk ID' })
-    }
-    
     const product = await Product.create(req.body)
     console.log('✅ Product created:', product.name)
     res.status(201).json(product)
@@ -43,16 +38,8 @@ router.post('/', async (req, res) => {
 })
 
 // UPDATE product (Admin only)
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, admin, async (req, res) => {
   try {
-    const clerkId = req.headers['x-clerk-id']
-    console.log('📝 Update - Clerk ID:', clerkId)
-    console.log('📝 Product ID:', req.params.id)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'Unauthorized - No Clerk ID' })
-    }
-    
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -72,16 +59,8 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE product (Admin only)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, admin, async (req, res) => {
   try {
-    const clerkId = req.headers['x-clerk-id']
-    console.log('🗑️ Delete - Clerk ID:', clerkId)
-    console.log('🗑️ Product ID:', req.params.id)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'Unauthorized - No Clerk ID' })
-    }
-    
     const product = await Product.findByIdAndDelete(req.params.id)
     
     if (!product) {

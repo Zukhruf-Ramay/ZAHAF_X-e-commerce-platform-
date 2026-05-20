@@ -1,21 +1,22 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useUser } from '@clerk/clerk-react'
+import { useAuth } from './AuthContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
 const WishlistContext = createContext()
 
 export const WishlistProvider = ({ children }) => {
-  const { user, isSignedIn, isLoaded } = useUser()
+  const { user, token, loading: authLoading } = useAuth()
   const [wishlistItems, setWishlistItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const API_URL = 'http://localhost:5000/api/wishlist'
 
   const fetchWishlist = useCallback(async () => {
-    if (!user?.id) return
+    if (!user?._id || !token) return
     try {
-      const response = await axios.get('http://localhost:5000/api/wishlist', {
+      const response = await axios.get(API_URL, {
         headers: {
-          'X-Clerk-ID': user.id,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -33,42 +34,35 @@ export const WishlistProvider = ({ children }) => {
       })) || []
 
       setWishlistItems(items)
-      console.log('Wishlist loaded:', items.length, 'items')
     } catch (err) {
       console.error('Failed to fetch wishlist', err)
       setWishlistItems([])
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user?._id, token])
 
   useEffect(() => {
-    if (!isLoaded) return
-    if (isSignedIn && user) {
-      queueMicrotask(() => {
-        void fetchWishlist()
-      })
-      return
+    if (authLoading) return
+    if (user && token) {
+      fetchWishlist()
+    } else {
+      setWishlistItems([])
+      setLoading(false)
     }
-    if (!isSignedIn) {
-      queueMicrotask(() => {
-        setWishlistItems([])
-        setLoading(false)
-      })
-    }
-  }, [isLoaded, isSignedIn, user, fetchWishlist])
+  }, [authLoading, user, token, fetchWishlist])
 
   const addToWishlist = async (product) => {
-    if (!isSignedIn) {
+    if (!user) {
       toast.error('Please login first!')
       return
     }
     try {
-      await axios.post('http://localhost:5000/api/wishlist/add',
+      await axios.post(`${API_URL}/add`,
         { productId: product._id },
         { 
           headers: { 
-            'X-Clerk-ID': user?.id,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           } 
         }
@@ -83,9 +77,9 @@ export const WishlistProvider = ({ children }) => {
 
   const removeFromWishlist = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/wishlist/remove/${id}`, {
-        headers: { 
-          'X-Clerk-ID': user?.id
+      await axios.delete(`${API_URL}/remove/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
       })
       await fetchWishlist()
@@ -102,8 +96,8 @@ export const WishlistProvider = ({ children }) => {
 
   const clearWishlist = async () => {
     try {
-      await axios.delete('http://localhost:5000/api/wishlist/clear', {
-        headers: { 'X-Clerk-ID': user?.id }
+      await axios.delete(`${API_URL}/clear`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       setWishlistItems([])
       toast.success('Wishlist cleared successfully!')

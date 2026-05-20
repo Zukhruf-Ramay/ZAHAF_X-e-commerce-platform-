@@ -1,27 +1,16 @@
 import express from 'express'
 import Cart from '../models/Cart.js'
+import { protect } from '../middleware/auth.js'
 
 const router = express.Router()
 
-// Helper to get clerkId
-const getClerkId = (req) => {
-  return req.headers['x-clerk-id'] || req.headers['X-Clerk-ID']
-}
-
 // Get cart
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
-    console.log('GET /cart - Clerk ID:', clerkId)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required', items: [] })
-    }
-    
-    let cart = await Cart.findOne({ clerkId }).populate('items.product')
+    let cart = await Cart.findOne({ user: req.user._id }).populate('items.product')
     
     if (!cart) {
-      cart = { clerkId, items: [] }
+      cart = await Cart.create({ user: req.user._id, items: [] })
     }
     
     res.json(cart)
@@ -32,21 +21,15 @@ router.get('/', async (req, res) => {
 })
 
 // Add to cart
-router.post('/add', async (req, res) => {
+router.post('/add', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
     const { productId, quantity = 1 } = req.body
-    
-    console.log('POST /cart/add - Clerk ID:', clerkId, 'Product:', productId)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
-    }
-    
-    let cart = await Cart.findOne({ clerkId })
+    const userId = req.user._id
+
+    let cart = await Cart.findOne({ user: userId })
     
     if (!cart) {
-      cart = new Cart({ clerkId, items: [] })
+      cart = new Cart({ user: userId, items: [] })
     }
     
     const existingItem = cart.items.find(item => item.product.toString() === productId)
@@ -68,16 +51,11 @@ router.post('/add', async (req, res) => {
 })
 
 // Update quantity
-router.put('/update/:productId', async (req, res) => {
+router.put('/update/:productId', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
     const { quantity } = req.body
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
-    }
-    
-    const cart = await Cart.findOne({ clerkId })
+
+    const cart = await Cart.findOne({ user: req.user._id })
     if (cart) {
       const item = cart.items.find(item => item.product.toString() === req.params.productId)
       if (item) {
@@ -95,15 +73,9 @@ router.put('/update/:productId', async (req, res) => {
 })
 
 // Remove from cart
-router.delete('/remove/:productId', async (req, res) => {
+router.delete('/remove/:productId', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
-    }
-    
-    const cart = await Cart.findOne({ clerkId })
+    const cart = await Cart.findOne({ user: req.user._id })
     if (cart) {
       cart.items = cart.items.filter(item => item.product.toString() !== req.params.productId)
       await cart.save()
@@ -118,23 +90,13 @@ router.delete('/remove/:productId', async (req, res) => {
 })
 
 // ✅ NEW: Clear entire cart
-router.delete('/clear', async (req, res) => {
+router.delete('/clear', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
-    console.log('DELETE /cart/clear - Clerk ID:', clerkId)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
-    }
-    
-    const cart = await Cart.findOne({ clerkId })
+    const cart = await Cart.findOne({ user: req.user._id })
     
     if (cart) {
       cart.items = []
       await cart.save()
-      console.log('Cart cleared successfully for user:', clerkId)
-    } else {
-      console.log('No cart found for user:', clerkId)
     }
     
     res.json({ message: 'Cart cleared successfully', items: [] })

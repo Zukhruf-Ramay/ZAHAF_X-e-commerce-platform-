@@ -26,7 +26,7 @@ const ProductCard = ({ product }) => {
   }
 
   return (
-    <div className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 relative">
+    <div className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 relative">
       
       {/* Wishlist Heart Button */}
       <button
@@ -34,29 +34,16 @@ const ProductCard = ({ product }) => {
         className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-md transition-all duration-300 hover:scale-110"
         aria-label={isInWishlist(product._id) ? 'Remove from wishlist' : 'Add to wishlist'}
       >
-        <svg 
-          className="w-5 h-5 transition-colors duration-300" 
-          fill={isInWishlist(product._id) ? 'currentColor' : 'none'} 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-          style={{ color: isInWishlist(product._id) ? '#ef4444' : '#9ca3af' }}
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
-          />
-        </svg>
+        <i className={`fas fa-heart transition-colors duration-300 ${isInWishlist(product._id) ? 'text-red-500' : 'text-gray-400'}`}></i>
       </button>
 
-      {/* Image Section with Zoom Effect */}
+      {/* Image Section with Zoom Effect - ONLY image zooms, card stays */}
       <div className="relative overflow-hidden bg-gray-100">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
         )}
         <img
-         src={product.mainImage || (product.images?.[0]) || product.image || 'https://via.placeholder.com/300x200'}
+          src={product.mainImage || (product.images?.[0]) || product.image || 'https://via.placeholder.com/300x200'}
           alt={product.name}
           className={`w-full h-48 sm:h-52 object-cover transition-transform duration-500 group-hover:scale-110 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -67,22 +54,20 @@ const ProductCard = ({ product }) => {
         {/* Stock Status Badge */}
         {product.stock > 0 ? (
           <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
-            ✓ In Stock
+            <i className="fas fa-check-circle mr-1"></i> In Stock
           </span>
         ) : (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
-            ✗ Out of Stock
+            <i className="fas fa-times-circle mr-1"></i> Out of Stock
           </span>
         )}
       </div>
 
-      {/* Product Details */}
+      {/* Product Details - No hover lift */}
       <div className="p-3 sm:p-4">
         {/* Category with Icon */}
         <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
-          </svg>
+          <i className="fas fa-tag text-xs"></i>
           {product.category || 'Electronics'}
         </p>
         
@@ -109,7 +94,7 @@ const ProductCard = ({ product }) => {
             to={`/products/${product._id}`}
             className="flex-1 text-center border-2 border-blue-500 text-blue-500 py-1.5 sm:py-2 rounded-lg text-sm font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105"
           >
-            View Details
+            <i className="fas fa-eye mr-1"></i> Details
           </Link>
           
           <button
@@ -123,17 +108,11 @@ const ProductCard = ({ product }) => {
           >
             {isAdded ? (
               <>
-                <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Added!
+                <i className="fas fa-check animate-bounce"></i> Added!
               </>
             ) : (
               <>
-                <svg className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add to Cart
+                <i className="fas fa-cart-plus"></i> Add to Cart
               </>
             )}
           </button>

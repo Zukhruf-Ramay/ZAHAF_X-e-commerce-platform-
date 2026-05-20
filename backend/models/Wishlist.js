@@ -1,8 +1,9 @@
 import mongoose from 'mongoose'
 
 const wishlistSchema = new mongoose.Schema({
-  clerkId: { 
-    type: String, 
+  user: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
     required: true, 
     unique: true,
     index: true 

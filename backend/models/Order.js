@@ -7,21 +7,71 @@ const orderItemSchema = new mongoose.Schema({
 })
 
 const orderSchema = new mongoose.Schema({
-  clerkId: { type: String, required: true, index: true },
+  user: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true, 
+    index: true 
+  },
   items: [orderItemSchema],
-  totalAmount: { type: Number, required: true },
+  
+  // ✅ Price breakdown - Professional
+  subtotal: { 
+    type: Number, 
+    required: true,
+    default: 0 
+  },
+  gstAmount: { 
+    type: Number, 
+    required: true,
+    default: 0 
+  },
+  totalAmount: { 
+    type: Number, 
+    required: true 
+  },
+  
   status: { 
     type: String, 
     enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
     default: 'pending' 
   },
   shippingAddress: {
-    street: String,
-    city: String,
-    zip: String
+    name: { type: String },
+    street: { type: String },
+    city: { type: String },
+    zip: { type: String },
+    phone: { type: String }
   },
-  paymentMethod: { type: String, default: 'cod' },
-  phone: String
+  paymentMethod: { 
+    type: String, 
+    enum: ['cod', 'card', 'bank_transfer'],
+    default: 'cod' 
+  },
+  paymentStatus: { 
+    type: String, 
+    enum: ['pending', 'paid', 'failed', 'refunded'],
+    default: 'pending' 
+  },
+  paymentDetails: {
+    transactionId: String,
+    cardLast4: String,
+    cardBrand: String,
+    receiptUrl: String
+  },
+  stripePaymentIntentId: { type: String },
+  stripeSessionId: { type: String },
+  transactionId: { type: String },
+  paidAt: { type: Date },
+  
+  // Refund tracking
+  isRefunded: { type: Boolean, default: false },
+  refundedAmount: { type: Number, default: 0 },
+  refundedAt: { type: Date },
+  
+  phone: String,
+  email: { type: String }
 }, { timestamps: true })
 
-export default mongoose.model('Order', orderSchema)
+const Order = mongoose.model('Order', orderSchema)
+export default Order

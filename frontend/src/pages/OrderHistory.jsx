@@ -1,32 +1,23 @@
 import { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
-import { useUser } from '@clerk/clerk-react'
+import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 const OrderHistory = () => {
-  const { user, isSignedIn, isLoaded } = useUser()
+  const { user, token, loading: authLoading } = useAuth()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchOrders = useCallback(async () => {
+    if (!token) return
     try {
-      setLoading(true)
-
-      const token = await window.Clerk?.session?.getToken()
-      const clerkId = user?.id
-
-      console.log('Fetching orders for user:', clerkId)
-
       const response = await axios.get('http://localhost:5000/api/orders/myorders', {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-Clerk-ID': clerkId,
           'Content-Type': 'application/json'
         }
       })
-
-      console.log('Orders received:', response.data)
       setOrders(response.data)
     } catch (err) {
       console.error('Error fetching orders:', err)
@@ -34,32 +25,26 @@ const OrderHistory = () => {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [token])
 
   useEffect(() => {
-    if (!isLoaded) return
-    if (isSignedIn && user) {
-      queueMicrotask(() => {
-        void fetchOrders()
-      })
+    if (authLoading) return
+    if (user && token) {
+      fetchOrders()
       return
     }
-    if (!isSignedIn) {
-      queueMicrotask(() => setLoading(false))
+    if (!user) {
+      setLoading(false)
     }
-  }, [isLoaded, isSignedIn, user, fetchOrders])
+  }, [authLoading, user, token, fetchOrders])
 
   const cancelOrder = async (orderId) => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return
     
     try {
-      const token = await window.Clerk?.session?.getToken()
-      const clerkId = user?.id
-      
       await axios.put(`http://localhost:5000/api/orders/${orderId}/cancel`, {}, {
         headers: { 
           'Authorization': `Bearer ${token}`,
-          'X-Clerk-ID': clerkId
         }
       })
       
@@ -80,7 +65,34 @@ const OrderHistory = () => {
     }
   }
 
-  if (!isLoaded || loading) {
+  const getPaymentStatusColor = (status) => {
+    switch(status) {
+      case 'paid': return 'bg-green-100 text-green-800'
+      case 'failed': return 'bg-red-100 text-red-800'
+      case 'refunded': return 'bg-orange-100 text-orange-800'
+      default: return 'bg-yellow-100 text-yellow-800'
+    }
+  }
+
+  const getPaymentMethodIcon = (method) => {
+    switch(method) {
+      case 'card': return '💳'
+      case 'cod': return '💵'
+      case 'bank_transfer': return '🏦'
+      default: return '💳'
+    }
+  }
+
+  const getPaymentMethodText = (method) => {
+    switch(method) {
+      case 'card': return 'Credit/Debit Card'
+      case 'cod': return 'Cash on Delivery'
+      case 'bank_transfer': return 'Bank Transfer'
+      default: return method || 'Not specified'
+    }
+  }
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -91,7 +103,7 @@ const OrderHistory = () => {
     )
   }
 
-  if (!isSignedIn) {
+  if (!user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -124,6 +136,7 @@ const OrderHistory = () => {
       <div className="space-y-4">
         {orders.map((order) => (
           <div key={order._id} className="bg-white rounded-lg shadow-md p-6">
+            {/* Order Header */}
             <div className="flex justify-between items-start flex-wrap gap-3">
               <div>
                 <p className="text-sm text-gray-500">Order #{order._id.slice(-8)}</p>
@@ -136,30 +149,69 @@ const OrderHistory = () => {
               </span>
             </div>
 
-            <div className="border-t mt-4 pt-4 flex justify-between items-center flex-wrap gap-3">
+            {/* Payment Information Row */}
+            <div className="flex flex-wrap gap-4 mt-3 pt-2 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Payment:</span>
+                <span className="text-sm font-medium flex items-center gap-1">
+                  {getPaymentMethodIcon(order.paymentMethod)} {getPaymentMethodText(order.paymentMethod)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Payment Status:</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getPaymentStatusColor(order.paymentStatus)}`}>
+                  {order.paymentStatus?.toUpperCase() || 'PENDING'}
+                </span>
+              </div>
+              {order.transactionId && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Transaction ID:</span>
+                  <span className="text-xs font-mono text-gray-600">{order.transactionId.slice(-8)}</span>
+                </div>
+              )}
+              {order.paidAt && order.paymentStatus === 'paid' && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Paid On:</span>
+                  <span className="text-xs text-gray-600">
+                    {new Date(order.paidAt).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Order Summary */}
+            <div className="border-t mt-3 pt-3 flex justify-between items-center flex-wrap gap-3">
               <div>
                 <p className="text-sm text-gray-500">
                   {order.items?.length || 0} items
                 </p>
-                {order.paymentMethod === 'cod' && (
-                  <p className="text-xs text-gray-400">Cash on Delivery</p>
-                )}
               </div>
               <p className="text-xl font-bold text-blue-600">
                 Rs. {order.totalAmount?.toLocaleString()}
               </p>
             </div>
 
-            {(order.status === 'pending' || order.status === 'processing') && (
-              <div className="border-t mt-4 pt-4 flex justify-end">
+            {/* Feature 2: Cancel Button Condition & Feature 3: Refund Info */}
+            <div className="border-t mt-3 pt-3 flex justify-end items-center gap-3">
+              {order.isRefunded && (
+                <span className="text-xs text-red-500 font-medium">Refunded: Rs. {order.refundedAmount?.toLocaleString()}</span>
+              )}
+              {['shipped', 'delivered', 'cancelled'].includes(order.status) && (
+                <span className="text-xs text-gray-400 italic">Cannot cancel {order.status} orders</span>
+              )}
+              {/* Cancel Button */}
                 <button
                   onClick={() => cancelOrder(order._id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium"
+                  disabled={!['pending', 'processing'].includes(order.status)}
+                  className={`text-sm font-medium ${
+                    ['pending', 'processing'].includes(order.status) 
+                      ? 'text-red-500 hover:text-red-700' 
+                      : 'text-gray-300 cursor-not-allowed'
+                  }`}
                 >
                   Cancel Order
                 </button>
-              </div>
-            )}
+            </div>
 
             {/* Order Items Details */}
             <details className="mt-4">

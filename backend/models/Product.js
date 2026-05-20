@@ -17,14 +17,7 @@ const productSchema = new mongoose.Schema({
   // Additional product details
   brand: { type: String },
   model: { type: String },
-  specifications: {
-    processor: String,
-    ram: String,
-    storage: String,
-    display: String,
-    battery: String,
-    camera: String
-  },
+  specifications: { type: mongoose.Schema.Types.Mixed },
   rating: { type: Number, default: 0 },
   numReviews: { type: Number, default: 0 },
   featured: { type: Boolean, default: false }

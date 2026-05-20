@@ -11,6 +11,8 @@ const ProductDetail = () => {
   const [isAdded, setIsAdded] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState('details')
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false)
+  const [modalImage, setModalImage] = useState('')
   const { addToCart } = useCart()
 
   const getAllImages = useCallback(() => {
@@ -33,7 +35,7 @@ const ProductDetail = () => {
       .catch(() => setLoading(false))
   }, [id])
 
-  // ✅ Keyboard Navigation for Images (Left/Right Arrow Keys)
+  // Keyboard Navigation for Images
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!product) return
@@ -47,12 +49,14 @@ const ProductDetail = () => {
       } else if (e.key === 'ArrowRight') {
         setSelectedImage((prev) => (prev + 1) % images.length)
         e.preventDefault()
+      } else if (e.key === 'Escape' && isImageModalOpen) {
+        setIsImageModalOpen(false)
       }
     }
     
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [product, getAllImages])
+  }, [product, getAllImages, isImageModalOpen])
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -60,6 +64,11 @@ const ProductDetail = () => {
     }
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleImageClick = (imageUrl) => {
+    setModalImage(imageUrl)
+    setIsImageModalOpen(true)
   }
 
   const images = getAllImages()
@@ -83,19 +92,20 @@ const ProductDetail = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Image Zoom Modal */}
+      {isImageModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center" onClick={() => setIsImageModalOpen(false)}>
+          <button className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition">&times;</button>
+          <img src={modalImage} alt="Zoomed view" className="max-w-[90vw] max-h-[90vh] object-contain" />
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="text-sm text-gray-500 mb-6">
         <Link to="/" className="hover:text-blue-500">Home</Link> / 
         <Link to="/products" className="hover:text-blue-500 ml-1">Products</Link> / 
         <span className="text-gray-700 ml-1">{product.name}</span>
       </div>
-
-      {/* Keyboard Navigation Hint */}
-      {/* {images.length > 1 && (
-        <div className="text-center text-sm text-gray-400 mb-4">
-          💡 Use ← → arrow keys to navigate between images
-        </div>
-      )} */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
@@ -106,27 +116,29 @@ const ProductDetail = () => {
             <img
               src={images[selectedImage]}
               alt={product.name}
-              className="w-full h-96 object-contain p-4 transition-transform duration-500 hover:scale-105"
+              className="w-full h-96 object-contain p-4 transition-transform duration-500 hover:scale-105 cursor-pointer"
+              onClick={() => handleImageClick(images[selectedImage])}
             />
             
-            {/* Navigation Arrows Overlay (for visual feedback) */}
+            {/* Zoom Icon */}
+            <div className="absolute bottom-2 right-2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer" onClick={() => handleImageClick(images[selectedImage])}>
+              <i className="fas fa-search-plus"></i>
+            </div>
+
+            {/* Navigation Arrows */}
             {images.length > 1 && (
               <>
                 <button
                   onClick={() => setSelectedImage((prev) => (prev - 1 + images.length) % images.length)}
                   className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+                  <i className="fas fa-chevron-left"></i>
                 </button>
                 <button
                   onClick={() => setSelectedImage((prev) => (prev + 1) % images.length)}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <i className="fas fa-chevron-right"></i>
                 </button>
               </>
             )}
@@ -166,14 +178,16 @@ const ProductDetail = () => {
           {/* Category Badge */}
           <div className="flex items-center gap-2">
             <span className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full">
-              {product.category || 'Electronics'}
+              <i className="fas fa-tag mr-1"></i> {product.category || 'Electronics'}
             </span>
             {product.stock > 0 ? (
               <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">
-                {product.stock} in stock
+                <i className="fas fa-check-circle mr-1"></i> {product.stock} in stock
               </span>
             ) : (
-              <span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">Out of Stock</span>
+              <span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">
+                <i className="fas fa-times-circle mr-1"></i> Out of Stock
+              </span>
             )}
           </div>
 
@@ -183,8 +197,8 @@ const ProductDetail = () => {
           {/* Brand & Model */}
           {(product.brand || product.model) && (
             <div className="text-gray-500 text-sm">
-              {product.brand && <span>Brand: {product.brand}</span>}
-              {product.model && <span className="ml-4">Model: {product.model}</span>}
+              {product.brand && <><i className="fas fa-building mr-1"></i> Brand: {product.brand}</>}
+              {product.model && <span className="ml-4"><i className="fas fa-barcode mr-1"></i> Model: {product.model}</span>}
             </div>
           )}
 
@@ -192,9 +206,7 @@ const ProductDetail = () => {
           <div className="flex items-center gap-2">
             <div className="flex text-yellow-400">
               {[...Array(5)].map((_, i) => (
-                <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                </svg>
+                <i key={i} className="fas fa-star"></i>
               ))}
             </div>
             <span className="text-gray-500 text-sm">({product.numReviews || 0} reviews)</span>
@@ -209,22 +221,22 @@ const ProductDetail = () => {
               )}
             </div>
             {product.oldPrice && (
-              <p className="text-green-600 text-sm mt-1">You save Rs. {(product.oldPrice - product.price).toLocaleString()}</p>
+              <p className="text-green-600 text-sm mt-1"><i className="fas fa-save mr-1"></i> You save Rs. {(product.oldPrice - product.price).toLocaleString()}</p>
             )}
           </div>
 
-          {/* Description Preview */}
+          {/* Description */}
           <p className="text-gray-600 leading-relaxed">{product.description}</p>
 
           {/* Quantity Selector */}
           <div className="flex items-center gap-4">
-            <span className="font-semibold text-gray-700">Quantity:</span>
+            <span className="font-semibold text-gray-700"><i className="fas fa-cubes mr-1"></i> Quantity:</span>
             <div className="flex items-center gap-3 border rounded-lg">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100"
               >
-                -
+                <i className="fas fa-minus"></i>
               </button>
               <span className="w-12 text-center font-semibold">{quantity}</span>
               <button
@@ -232,7 +244,7 @@ const ProductDetail = () => {
                 disabled={quantity >= product.stock}
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
               >
-                +
+                <i className="fas fa-plus"></i>
               </button>
             </div>
             <span className="text-gray-500 text-sm">Max {product.stock} units</span>
@@ -248,47 +260,47 @@ const ProductDetail = () => {
                 : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transform hover:scale-105'
             }`}
           >
-            {isAdded ? '✓ Added to Cart!' : `🛒 Add to Cart (${quantity})`}
+            {isAdded ? (
+              <><i className="fas fa-check mr-2"></i> Added to Cart!</>
+            ) : (
+              <><i className="fas fa-cart-plus mr-2"></i> Add to Cart ({quantity})</>
+            )}
           </button>
 
           {/* Additional Info */}
           <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 pt-4 border-t">
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <i className="fas fa-truck text-green-600"></i>
               Free Shipping on orders over Rs. 50,000
             </div>
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M6 14h12M6 18h6" />
-              </svg>
+              <i className="fas fa-undo-alt text-green-600"></i>
               7-Day Easy Returns
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs Section - Specifications & Details */}
+      {/* Tabs Section */}
       <div className="mt-12">
         <div className="border-b flex gap-6">
           <button
             onClick={() => setActiveTab('details')}
             className={`pb-3 px-2 font-semibold transition-colors ${activeTab === 'details' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
           >
-            Product Details
+            <i className="fas fa-info-circle mr-1"></i> Product Details
           </button>
           <button
             onClick={() => setActiveTab('specs')}
             className={`pb-3 px-2 font-semibold transition-colors ${activeTab === 'specs' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
           >
-            Specifications
+            <i className="fas fa-microchip mr-1"></i> Specifications
           </button>
           <button
             onClick={() => setActiveTab('shipping')}
             className={`pb-3 px-2 font-semibold transition-colors ${activeTab === 'shipping' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
           >
-            Shipping & Returns
+            <i className="fas fa-shipping-fast mr-1"></i> Shipping & Returns
           </button>
         </div>
 
@@ -297,9 +309,9 @@ const ProductDetail = () => {
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Product Description</h3>
               <p className="text-gray-600">{product.description}</p>
-              {product.features && (
+              {product.features && product.features.length > 0 && (
                 <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  {product.features?.map((feature, i) => (
+                  {product.features.map((feature, i) => (
                     <li key={i}>{feature}</li>
                   ))}
                 </ul>
@@ -307,56 +319,26 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {activeTab === 'specs' && (
+          {activeTab === 'specs' && product.specifications && (
             <div>
               <h3 className="font-semibold text-lg mb-4">Technical Specifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {product.specifications?.processor && (
-                  <div className="flex border-b py-2">
-                    <span className="w-32 text-gray-500">Processor</span>
-                    <span className="font-medium">{product.specifications.processor}</span>
+                {Object.entries(product.specifications).map(([key, value]) => (
+                  <div key={key} className="flex border-b py-2">
+                    <span className="w-32 text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                    <span className="font-medium">{value}</span>
                   </div>
-                )}
-                {product.specifications?.ram && (
-                  <div className="flex border-b py-2">
-                    <span className="w-32 text-gray-500">RAM</span>
-                    <span className="font-medium">{product.specifications.ram}</span>
-                  </div>
-                )}
-                {product.specifications?.storage && (
-                  <div className="flex border-b py-2">
-                    <span className="w-32 text-gray-500">Storage</span>
-                    <span className="font-medium">{product.specifications.storage}</span>
-                  </div>
-                )}
-                {product.specifications?.display && (
-                  <div className="flex border-b py-2">
-                    <span className="w-32 text-gray-500">Display</span>
-                    <span className="font-medium">{product.specifications.display}</span>
-                  </div>
-                )}
-                {product.specifications?.battery && (
-                  <div className="flex border-b py-2">
-                    <span className="w-32 text-gray-500">Battery</span>
-                    <span className="font-medium">{product.specifications.battery}</span>
-                  </div>
-                )}
-                {product.specifications?.camera && (
-                  <div className="flex border-b py-2">
-                    <span className="w-32 text-gray-500">Camera</span>
-                    <span className="font-medium">{product.specifications.camera}</span>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           )}
 
           {activeTab === 'shipping' && (
             <div className="space-y-4 text-gray-600">
-              <p>• Free shipping on orders above Rs. 50,000</p>
-              <p>• Delivery within 3-5 business days across Pakistan</p>
-              <p>• Easy 7-day return policy</p>
-              <p>• Cash on Delivery available</p>
+              <p><i className="fas fa-check-circle text-green-500 mr-2"></i> Free shipping on orders above Rs. 50,000</p>
+              <p><i className="fas fa-truck mr-2"></i> Delivery within 3-5 business days across Pakistan</p>
+              <p><i className="fas fa-undo-alt mr-2"></i> Easy 7-day return policy</p>
+              <p><i className="fas fa-money-bill-wave mr-2"></i> Cash on Delivery available</p>
             </div>
           )}
         </div>

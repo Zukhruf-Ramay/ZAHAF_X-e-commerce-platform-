@@ -1,26 +1,17 @@
 import express from 'express'
 import Wishlist from '../models/Wishlist.js'
+import { protect } from '../middleware/auth.js'
 
 const router = express.Router()
 
-const getClerkId = (req) => {
-  return req.headers['x-clerk-id'] || req.headers['X-Clerk-ID']
-}
-
 // Get wishlist
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
-    console.log('GET /wishlist - Clerk ID:', clerkId)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required', items: [] })
-    }
-    
-    let wishlist = await Wishlist.findOne({ clerkId }).populate('items')
+    const userId = req.user._id
+    let wishlist = await Wishlist.findOne({ user: userId }).populate('items')
     
     if (!wishlist) {
-      wishlist = { clerkId, items: [] }
+      wishlist = await Wishlist.create({ user: userId, items: [] })
     }
     
     res.json(wishlist)
@@ -31,28 +22,29 @@ router.get('/', async (req, res) => {
 })
 
 // Add to wishlist
-router.post('/add', async (req, res) => {
+router.post('/add', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
+    const userId = req.user._id
     const { productId } = req.body
     
-    console.log('POST /wishlist/add - Clerk ID:', clerkId, 'Product:', productId)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
+    if (!productId) {
+      return res.status(400).json({ message: 'Product ID required' })
     }
     
-    let wishlist = await Wishlist.findOne({ clerkId })
+    let wishlist = await Wishlist.findOne({ user: userId })
     
     if (!wishlist) {
-      wishlist = new Wishlist({ clerkId, items: [] })
+      wishlist = new Wishlist({ user: userId, items: [] })
     }
     
-    if (!wishlist.items.includes(productId)) {
+    const isProductInWishlist = wishlist.items.some(
+      id => id.toString() === productId
+    )
+    
+    if (!isProductInWishlist) {
       wishlist.items.push(productId)
       await wishlist.save()
       await wishlist.populate('items')
-      console.log('Product added to wishlist')
     }
     
     res.json(wishlist)
@@ -63,19 +55,17 @@ router.post('/add', async (req, res) => {
 })
 
 // Remove from wishlist
-router.delete('/remove/:productId', async (req, res) => {
+router.delete('/remove/:productId', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
+    const userId = req.user._id
+    const productId = req.params.productId
     
-    console.log('DELETE /wishlist/remove - Clerk ID:', clerkId, 'Product:', req.params.productId)
+    const wishlist = await Wishlist.findOne({ user: userId })
     
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
-    }
-    
-    const wishlist = await Wishlist.findOne({ clerkId })
     if (wishlist) {
-      wishlist.items = wishlist.items.filter(id => id.toString() !== req.params.productId)
+      wishlist.items = wishlist.items.filter(
+        id => id.toString() !== productId
+      )
       await wishlist.save()
       await wishlist.populate('items')
     }
@@ -87,24 +77,15 @@ router.delete('/remove/:productId', async (req, res) => {
   }
 })
 
-// ✅ NEW: Clear entire wishlist
-router.delete('/clear', async (req, res) => {
+// Clear entire wishlist
+router.delete('/clear', protect, async (req, res) => {
   try {
-    const clerkId = getClerkId(req)
-    console.log('DELETE /wishlist/clear - Clerk ID:', clerkId)
-    
-    if (!clerkId) {
-      return res.status(401).json({ message: 'User ID required' })
-    }
-    
-    const wishlist = await Wishlist.findOne({ clerkId })
+    const userId = req.user._id
+    const wishlist = await Wishlist.findOne({ user: userId })
     
     if (wishlist) {
       wishlist.items = []
       await wishlist.save()
-      console.log('Wishlist cleared successfully for user:', clerkId)
-    } else {
-      console.log('No wishlist found for user:', clerkId)
     }
     
     res.json({ message: 'Wishlist cleared successfully', items: [] })
