@@ -75,8 +75,7 @@ const Navbar = () => {
                 location.pathname === '/' ? activeLinkClass : inactiveLinkClass
               }`}
             >
-              {/* <i className="fas fa-home mr-1"></i> */}
-               Home
+              Home
             </Link>
             <Link 
               to="/products" 
@@ -84,7 +83,6 @@ const Navbar = () => {
                 location.pathname === '/products' ? activeLinkClass : inactiveLinkClass
               }`}
             >
-              {/* <i className="fas fa-shopping-bag mr-1"></i>  */}
               Products
             </Link>
             {user && (
@@ -95,8 +93,7 @@ const Navbar = () => {
                     location.pathname === '/wishlist' ? activeLinkClass : inactiveLinkClass
                   }`}
                 >
-                  {/* <i className="fas fa-heart mr-1"></i> */}
-                   Wishlist
+                  Wishlist
                   {wishlistItems.length > 0 && (
                     <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 animate-pulse">
                       {wishlistItems.length}
@@ -109,8 +106,7 @@ const Navbar = () => {
                     location.pathname === '/orders' ? activeLinkClass : inactiveLinkClass
                   }`}
                 >
-                  {/* <i className="fas fa-box mr-1"></i> */}
-                   Orders
+                  Orders
                 </Link>
               </>
             )}
@@ -118,10 +114,10 @@ const Navbar = () => {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Cart Icon */}
+            {/* ✅ Cart Icon - FIXED (uncommented) */}
             <Link to="/cart" className="relative group">
               <div className="p-2 rounded-full bg-gray-100 transition-all duration-300 group-hover:bg-gray-200 group-hover:scale-110">
-                {/* <i className="fas fa-shopping-cart text-gray-700"></i> */}
+                <i className="fas fa-shopping-cart text-gray-700"></i>
               </div>
               {cartItems.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center animate-bounce">

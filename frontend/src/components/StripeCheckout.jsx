@@ -63,7 +63,7 @@ const StripeCheckout = ({ orderId, amount, disabled, onSuccess, onError }) => {
       disabled={disabled || loading || paymentInitiated || !orderId}
       className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50"
     >
-      {loading ? 'Processing...' : paymentInitiated ? 'Redirecting...' : `💳 Pay Rs. ${amount?.toLocaleString()}`}
+      {loading ? 'Processing...' : paymentInitiated ? 'Redirecting...' : ` Pay Rs. ${amount?.toLocaleString()}`}
     </button>
   )
 }

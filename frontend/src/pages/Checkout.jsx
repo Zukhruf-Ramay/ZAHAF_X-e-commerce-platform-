@@ -14,20 +14,103 @@ const Checkout = () => {
     street: '', city: '', zip: '', phone: '',
     email: user?.email || ''
   })
+  const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cod')
   const [orderId, setOrderId] = useState(null)
   const [creatingOrder, setCreatingOrder] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState(null)
   const [order, setOrder] = useState(null)
+  const [isFormValid, setIsFormValid] = useState(false)
   
   const paymentInitiatedRef = useRef(false)
 
-  // ✅ Professional Price Calculation
+  // Professional Price Calculation
   const subtotal = totalPrice
   const GST_RATE = 0.18
   const gstAmount = subtotal * GST_RATE
   const grandTotal = subtotal + gstAmount
+
+  // ==========================================
+  // VALIDATION FUNCTIONS
+  // ==========================================
+  
+  const validateEmail = (email) => {
+    if (!email) return 'Email is required'
+    const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/
+    if (!emailRegex.test(email)) return 'Please enter a valid email address'
+    return ''
+  }
+
+  const validatePhone = (phone) => {
+    if (!phone) return 'Phone number is required'
+    const phoneRegex = /^(\+92|0)?[3][0-9]{9}$/
+    if (!phoneRegex.test(phone)) return 'Enter valid Pakistan number (+92xxxxxxxxx or 03xxxxxxxxx)'
+    return ''
+  }
+
+  const validateStreet = (street) => {
+    if (!street) return 'Street address is required'
+    if (street.length < 5) return 'Address must be at least 5 characters'
+    if (street.length > 200) return 'Address is too long'
+    return ''
+  }
+
+  const validateCity = (city) => {
+    if (!city) return 'City is required'
+    if (city.length < 2) return 'Enter a valid city name'
+    if (!/^[a-zA-Z\s]+$/.test(city)) return 'City should contain only letters'
+    return ''
+  }
+
+  const validateZip = (zip) => {
+    if (!zip) return 'ZIP code is required'
+    if (!/^\d{5}$/.test(zip)) return 'ZIP code must be 5 digits'
+    return ''
+  }
+
+  // Validate single field
+  const validateField = (name, value) => {
+    switch(name) {
+      case 'email': return validateEmail(value)
+      case 'phone': return validatePhone(value)
+      case 'street': return validateStreet(value)
+      case 'city': return validateCity(value)
+      case 'zip': return validateZip(value)
+      default: return ''
+    }
+  }
+
+  // Check if form is valid (no errors and all fields filled)
+  const checkFormValidity = (formValues, errorValues) => {
+    const requiredFields = ['email', 'phone', 'street', 'city', 'zip']
+    const allFieldsFilled = requiredFields.every(field => formValues[field]?.trim())
+    const noErrors = Object.values(errorValues).every(error => error === '')
+    return allFieldsFilled && noErrors
+  }
+
+  // Handle input change with validation
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    const error = validateField(name, value)
+    
+    setForm(prev => ({ ...prev, [name]: value }))
+    setErrors(prev => ({ ...prev, [name]: error }))
+  }
+
+  // Handle blur for touch tracking
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched(prev => ({ ...prev, [name]: true }))
+    const error = validateField(name, form[name])
+    setErrors(prev => ({ ...prev, [name]: error }))
+  }
+
+  // Update form validity whenever form or errors change
+  useEffect(() => {
+    setIsFormValid(checkFormValidity(form, errors))
+  }, [form, errors])
 
   // Check order status if orderId exists
   useEffect(() => {
@@ -48,8 +131,20 @@ const Checkout = () => {
     }
   }
 
+  // Helper to show error message
+  const showError = (fieldName) => {
+    return touched[fieldName] && errors[fieldName] ? (
+      <p className="text-red-500 text-xs mt-1">{errors[fieldName]}</p>
+    ) : null
+  }
+
   if (!user) {
-    return <div className="text-center py-20">Please login to checkout <Link to="/login" className="text-blue-500">Login</Link></div>
+    return (
+      <div className="text-center py-20">
+        Please login to checkout 
+        <Link to="/login" className="text-blue-500 ml-2">Login</Link>
+      </div>
+    )
   }
 
   if (cartItems.length === 0 && !orderId) {
@@ -58,7 +153,9 @@ const Checkout = () => {
         <div className="text-center">
           <div className="text-7xl mb-4">🛒</div>
           <h2 className="text-2xl font-bold text-gray-700 mb-4">Your Cart is Empty!</h2>
-          <Link to="/products" className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg">Browse Products →</Link>
+          <Link to="/products" className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg">
+            Browse Products →
+          </Link>
         </div>
       </div>
     )
@@ -87,8 +184,9 @@ const Checkout = () => {
   const handleCardPayment = async () => {
     if (creatingOrder || orderId) return
     
-    if (!form.street || !form.city || !form.zip || !form.phone) {
-      toast.error('Please fill all shipping details')
+    if (!isFormValid) {
+      toast.error('Please fix all errors before proceeding')
+      setTouched({ email: true, phone: true, street: true, city: true, zip: true })
       return
     }
     
@@ -112,6 +210,12 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (loading) return
+    
+    if (!isFormValid) {
+      toast.error('Please fix all errors before placing order')
+      setTouched({ email: true, phone: true, street: true, city: true, zip: true })
+      return
+    }
     
     setLoading(true)
     try {
@@ -239,29 +343,103 @@ const Checkout = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold mb-1">Full Name</label>
-                  <input type="text" value={user?.name || ''} disabled className="w-full border p-2 rounded bg-gray-50"/>
+                  <input 
+                    type="text" 
+                    value={user?.name || ''} 
+                    disabled 
+                    className="w-full border p-2 rounded bg-gray-50"
+                  />
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Email</label>
-                  <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required className="w-full border p-2 rounded"/>
+                  <label className="block text-sm font-semibold mb-1">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="email" 
+                    name="email"
+                    value={form.email} 
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      touched.email && errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {showError('email')}
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Street Address</label>
-                  <input type="text" placeholder="House number, street" value={form.street} onChange={e => setForm({...form, street: e.target.value})} required className="w-full border p-2 rounded"/>
+                  <label className="block text-sm font-semibold mb-1">
+                    Street Address <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    name="street"
+                    placeholder="House number, street" 
+                    value={form.street} 
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      touched.street && errors.street ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {showError('street')}
                 </div>
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-1">City</label>
-                    <input type="text" placeholder="City" value={form.city} onChange={e => setForm({...form, city: e.target.value})} required className="w-full border p-2 rounded"/>
+                    <label className="block text-sm font-semibold mb-1">
+                      City <span className="text-red-500">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      name="city"
+                      placeholder="City" 
+                      value={form.city} 
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        touched.city && errors.city ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {showError('city')}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1">ZIP Code</label>
-                    <input type="text" placeholder="ZIP" value={form.zip} onChange={e => setForm({...form, zip: e.target.value})} required className="w-full border p-2 rounded"/>
+                    <label className="block text-sm font-semibold mb-1">
+                      ZIP Code <span className="text-red-500">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      name="zip"
+                      placeholder="ZIP" 
+                      value={form.zip} 
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        touched.zip && errors.zip ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {showError('zip')}
                   </div>
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Phone Number</label>
-                  <input type="tel" placeholder="+92 123 4567890" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required className="w-full border p-2 rounded"/>
+                  <label className="block text-sm font-semibold mb-1">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="tel" 
+                    name="phone"
+                    placeholder="+92 123 4567890" 
+                    value={form.phone} 
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      touched.phone && errors.phone ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {showError('phone')}
+                  <p className="text-gray-400 text-xs mt-1">Format: 03xxxxxxxxx or +92xxxxxxxxx</p>
                 </div>
               </div>
             </div>
@@ -271,7 +449,14 @@ const Checkout = () => {
               <h2 className="text-xl font-bold mb-4">Payment Method</h2>
               
               <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-blue-500 mb-3">
-                <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={e => setPaymentMethod(e.target.value)} className="mr-3 w-4 h-4"/>
+                <input 
+                  type="radio" 
+                  name="payment" 
+                  value="cod" 
+                  checked={paymentMethod === 'cod'} 
+                  onChange={e => setPaymentMethod(e.target.value)} 
+                  className="mr-3 w-4 h-4"
+                />
                 <div className="flex-1">
                   <span className="font-semibold">Cash on Delivery</span>
                   <p className="text-sm text-gray-500">Pay when you receive the order</p>
@@ -280,7 +465,14 @@ const Checkout = () => {
               </label>
               
               <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-blue-500">
-                <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={e => setPaymentMethod(e.target.value)} className="mr-3 w-4 h-4"/>
+                <input 
+                  type="radio" 
+                  name="payment" 
+                  value="card" 
+                  checked={paymentMethod === 'card'} 
+                  onChange={e => setPaymentMethod(e.target.value)} 
+                  className="mr-3 w-4 h-4"
+                />
                 <div className="flex-1">
                   <span className="font-semibold">Credit / Debit Card</span>
                   <p className="text-sm text-gray-500">Pay securely with Stripe</p>
@@ -326,17 +518,32 @@ const Checkout = () => {
                   <i className="fas fa-sync-alt mr-2"></i> Retry Payment
                 </button>
               ) : paymentMethod === 'cod' ? (
-                <button onClick={handleSubmit} disabled={loading || !form.street || !form.city || !form.zip || !form.phone} className="w-full mt-6 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 disabled:opacity-50">
+                <button 
+                  onClick={handleSubmit} 
+                  disabled={loading || !isFormValid} 
+                  className="w-full mt-6 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                >
                   {loading ? 'Processing...' : 'Place Order (COD)'}
                 </button>
               ) : (
                 <>
                   {!orderId ? (
-                    <button onClick={handleCardPayment} disabled={creatingOrder || !form.street || !form.city || !form.zip || !form.phone} className="w-full mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50">
+                    <button 
+                      onClick={handleCardPayment} 
+                      disabled={creatingOrder || !isFormValid} 
+                      className="w-full mt-6 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    >
                       {creatingOrder ? 'Creating Order...' : 'Proceed to Payment'}
                     </button>
                   ) : (
-                    <StripeCheckout orderId={orderId} amount={Math.round(grandTotal)} disabled={paymentStatus === 'failed'} onSuccess={handlePaymentSuccess} onError={handlePaymentError} onCancel={handlePaymentCancel} />
+                    <StripeCheckout 
+                      orderId={orderId} 
+                      amount={Math.round(grandTotal)} 
+                      disabled={paymentStatus === 'failed'} 
+                      onSuccess={handlePaymentSuccess} 
+                      onError={handlePaymentError} 
+                      onCancel={handlePaymentCancel} 
+                    />
                   )}
                 </>
               )}

@@ -1,46 +1,76 @@
-import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true, minlength: 6 },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  isVerified: { type: Boolean, default: true }
-}, { timestamps: true })
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+    },
 
-// ✅ SIMPLE VERSION - Using async/await properly
-userSchema.pre('save', async function() {
-  try {
-    console.log('🔐 Pre-save hook called for:', this.email)
-    console.log('Password modified?', this.isModified('password'))
-    
-    if (!this.isModified('password')) {
-      console.log('Password not modified, skipping hash')
-      return
-    }
-    
-    console.log('Original password:', this.password)
-    
-    // Generate salt and hash
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(this.password, salt)
-    
-    console.log('✅ Password hashed successfully!')
-    console.log('New hash:', hashedPassword)
-    this.password = hashedPassword
-    
-  } catch (error) {
-    console.error('Hashing error:', error)
-    // If an error occurs, throw it. Mongoose will catch it and pass it to the callback.
-    throw error
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters'],
+    },
+
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationToken: String,
+    verificationTokenExpiry: Date,
+
+    resetPasswordToken: String,
+    resetPasswordExpiry: Date,
+
+    // ✅ ADD THESE TWO FIELDS
+    tempResetToken: String,
+    tempResetTokenExpiry: Date,
+
+    lastVerificationEmailSent: Date,
+  },
+  {
+    timestamps: true,
   }
-})
+);
+
+// Password hashing middleware
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
 // Compare password method
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password)
-}
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
-const User = mongoose.model('User', userSchema)
-export default User
+// Generate email verification token
+userSchema.methods.generateVerificationToken = function () {
+  const token = crypto.randomBytes(32).toString('hex');
+  this.verificationToken = token;
+  this.verificationTokenExpiry = Date.now() + 24 * 60 * 60 * 1000;
+  return token;
+};
+
+const User = mongoose.model('User', userSchema);
+export default User;

@@ -2,15 +2,17 @@ import express from 'express'
 import Stripe from 'stripe'
 import Order from '../models/Order.js'
 import Cart from '../models/Cart.js'
+import { protect } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_51TYUSQQu035SFNX8ygmL87IbpQdKrgklocKZHXQS0o4WB7x5XZRB61YbkkRCzroSgBqPGXns9ri3NEmxnB7Vy2lG00nebgrikv')
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-// Create checkout session
-router.post('/create-checkout-session', async (req, res) => {
+// Create checkout session - PKR support with GST included
+router.post('/create-checkout-session', protect, async (req, res) => {
   try {
-    const { orderId, userId } = req.body
+    const { orderId } = req.body
+    const userId = req.user._id
     
     const order = await Order.findById(orderId).populate('items.product')
     
@@ -18,14 +20,18 @@ router.post('/create-checkout-session', async (req, res) => {
       return res.status(404).json({ error: 'Order not found' })
     }
     
+    if (order.user.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Unauthorized' })
+    }
+    
     const lineItems = order.items.map((item) => ({
       price_data: {
-        currency: 'usd',
+        currency: 'pkr',
         product_data: { 
           name: item.product?.name || 'Product',
-          description: `Quantity: ${item.quantity}`,
+          description: `Quantity: ${item.quantity} (includes 18% GST)`,
         },
-        unit_amount: Math.round((item.price || 0) * 100),
+        unit_amount: Math.round((item.price || 0) * 1.18 * 100),
       },
       quantity: item.quantity,
     }))
@@ -38,8 +44,7 @@ router.post('/create-checkout-session', async (req, res) => {
       cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`,
       metadata: { 
         orderId: order._id.toString(), 
-        userId: userId || order.user?.toString(),
-        email: order.email || ''
+        userId: userId.toString(),
       },
     })
     
@@ -48,7 +53,7 @@ router.post('/create-checkout-session', async (req, res) => {
       paymentStatus: 'pending'
     })
     
-    console.log(`✅ Stripe session created for order ${orderId}`)
+    console.log(`✅ Stripe session created for order ${orderId} in PKR (GST included)`)
     res.json({ url: session.url, sessionId: session.id })
   } catch (error) {
     console.error('Stripe error:', error.message)
@@ -128,15 +133,19 @@ router.post('/payment-success', async (req, res) => {
   }
 })
 
-// ✅ Webhook with payment failure handling
+// Webhook - No authentication needed (Stripe calls this)
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature']
   let event
   
+  console.log('📡 Webhook received')
+  
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET)
+    const rawBody = req.rawBody || req.body
+    event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET)
+    console.log('✅ Event type:', event.type)
   } catch (err) {
-    console.error('Webhook error:', err.message)
+    console.error('❌ Webhook error:', err.message)
     return res.status(400).send(`Webhook Error: ${err.message}`)
   }
   
@@ -145,6 +154,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const session = event.data.object
     const orderId = session.metadata.orderId
     const userId = session.metadata.userId
+    
+    console.log(`💰 Payment completed for order: ${orderId}`)
     
     let paymentDetails = {}
     if (session.payment_intent) {
@@ -164,7 +175,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       }
     }
     
-    await Order.findByIdAndUpdate(orderId, {
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, {
       paymentStatus: 'paid',
       status: 'processing',
       paymentMethod: 'card',
@@ -173,7 +184,9 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       transactionId: session.payment_intent,
       paidAt: new Date(),
       paymentDetails: paymentDetails
-    })
+    }, { new: true })
+    
+    console.log(`✅ Order ${orderId} payment status updated to: ${updatedOrder.paymentStatus}`)
     
     if (userId) {
       await Cart.findOneAndUpdate(
@@ -181,12 +194,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         { items: [] },
         { new: true }
       )
+      console.log(`✅ Cart cleared for user ${userId}`)
     }
-    
-    console.log(`✅ Payment successful for order ${orderId}`)
   }
   
-  // ✅ Handle payment failure
+  // Handle payment failure
   if (event.type === 'payment_intent.payment_failed') {
     const paymentIntent = event.data.object
     const orderId = paymentIntent.metadata?.orderId
@@ -204,8 +216,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   res.json({ received: true })
 })
 
-// ✅ Refund endpoint
-router.post('/refund', async (req, res) => {
+// Refund endpoint
+router.post('/refund', protect, async (req, res) => {
   try {
     const { orderId, paymentIntentId, amount } = req.body
     
@@ -235,8 +247,8 @@ router.post('/refund', async (req, res) => {
   }
 })
 
-// ✅ Cleanup failed orders (older than 24 hours)
-router.post('/cleanup-failed-orders', async (req, res) => {
+// Cleanup failed orders
+router.post('/cleanup-failed-orders', protect, async (req, res) => {
   try {
     const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000)
     

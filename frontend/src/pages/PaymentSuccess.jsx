@@ -4,65 +4,84 @@ import { toast } from 'react-toastify'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useOrders } from '../context/OrderContext'
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
+  const orderId = searchParams.get('id')
   const { user, token } = useAuth()
   const { clearCart } = useCart()
+  const { refreshOrders } = useOrders()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
-  
-  // ✅ Use ref to prevent multiple calls
-  const hasClearedCart = useRef(false)
-  const hasFetchedOrder = useRef(false)
+  const processed = useRef(false)
 
   useEffect(() => {
-    const fetchOrderBySession = async () => {
-      // ✅ Prevent multiple fetches
-      if (hasFetchedOrder.current) return
-      hasFetchedOrder.current = true
+    const processPayment = async () => {
+      if (processed.current) return
       
-      if (!sessionId || !token) {
-        setLoading(false)
+      // Handle COD orders
+      if (orderId && !sessionId) {
+        processed.current = true
+        try {
+          const response = await axios.get(`http://localhost:5000/api/orders/${orderId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          setOrder(response.data)
+          await clearCart()
+          await refreshOrders()
+          toast.success('Order placed successfully!')
+        } catch (err) {
+          console.error('Error:', err)
+          toast.error('Something went wrong')
+        } finally {
+          setLoading(false)
+        }
         return
       }
       
-      try {
-        const response = await axios.get(`http://localhost:5000/api/payments/order-by-session/${sessionId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      // Handle Stripe card payments (works with or without token)
+      if (sessionId) {
+        processed.current = true
+        try {
+          // Get order by session (no auth needed)
+          const response = await axios.get(`http://localhost:5000/api/payments/order-by-session/${sessionId}`)
+          const orderData = response.data
+          
+          // If payment status is still pending, update it
+          if (orderData.paymentStatus !== 'paid') {
+            await axios.post(`http://localhost:5000/api/payments/payment-success`, {
+              sessionId: sessionId
+            })
+            orderData.paymentStatus = 'paid'
+            orderData.status = 'processing'
           }
-        })
-        setOrder(response.data)
-        toast.success('Payment successful! Your order has been confirmed.')
-        
-      } catch (err) {
-        console.error('Failed to fetch order:', err)
-        toast.error('Payment successful but could not fetch order details')
-      } finally {
-        setLoading(false)
+          
+          setOrder(orderData)
+          
+          // Clear cart if user is logged in
+          if (token) {
+            await clearCart()
+            await refreshOrders()
+          }
+          
+          localStorage.removeItem('pendingOrderId')
+          localStorage.removeItem('stripeSessionId')
+          
+          toast.success('Payment successful! Your order has been confirmed.')
+          
+        } catch (err) {
+          console.error('Error:', err)
+          toast.error('Payment successful but something went wrong')
+        } finally {
+          setLoading(false)
+        }
       }
     }
     
-    const clearUserCart = async () => {
-      // ✅ Prevent multiple cart clears
-      if (hasClearedCart.current) return
-      hasClearedCart.current = true
-      
-      try {
-        await clearCart()
-        console.log('✅ Cart cleared after successful payment')
-      } catch (err) {
-        console.error('Failed to clear cart:', err)
-      }
-    }
-    
-    fetchOrderBySession()
-    clearUserCart()
-    
-    // ✅ Empty dependency array - run only once
-  }, [sessionId, token, clearCart])
+    processPayment()
+  }, [sessionId, orderId, token, clearCart, refreshOrders])
 
   const getPaymentMethodText = (method) => {
     switch(method) {
@@ -108,12 +127,6 @@ const PaymentSuccess = () => {
                 <span className="text-gray-500">Payment Status:</span>
                 <span className="text-green-600 font-semibold">PAID</span>
               </div>
-              {order.transactionId && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Transaction ID:</span>
-                  <span className="font-mono text-xs">{order.transactionId.slice(-8)}</span>
-                </div>
-              )}
             </div>
           </div>
         )}

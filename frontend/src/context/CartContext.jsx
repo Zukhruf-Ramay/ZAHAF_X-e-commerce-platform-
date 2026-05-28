@@ -1,158 +1,117 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useAuth } from './AuthContext'
-import axios from 'axios'
-import { toast } from 'react-toastify'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { cartAPI } from '../services/api';
+import { toast } from 'react-toastify';
 
-const CartContext = createContext()
+const CartContext = createContext();
+
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within CartProvider');
+  }
+  return context;
+};
 
 export const CartProvider = ({ children }) => {
-  const { user, token, loading: authLoading } = useAuth()
-  const [cartItems, setCartItems] = useState([])
-  const [loading, setLoading] = useState(true)
-  const API_URL = 'http://localhost:5000/api/cart'
+  const { user, isAuthenticated } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchCart = useCallback(async () => {
-    if (!user?._id || !token) {
-      setLoading(false)
-      return
+    if (!isAuthenticated) {
+      setCartItems([]);
+      setLoading(false);
+      return;
     }
     
     try {
-      const response = await axios.get(API_URL, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
+      const response = await cartAPI.getCart();
       const items = response.data.items?.map(item => ({
         _id: item.product._id,
         name: item.product.name,
         price: item.product.price,
-        image: item.product.mainImage || (item.product.images?.[0]) || item.product.image || 'https://placehold.co/400x400/e2e8f0/64748b?text=No+Image',
+        image: item.product.mainImage || (item.product.images?.[0]) || 'https://placehold.co/400x400',
         category: item.product.category,
         stock: item.product.stock,
         quantity: item.quantity
-      })) || []
-
-      setCartItems(items)
+      })) || [];
+      
+      setCartItems(items);
     } catch (err) {
-      console.error('Failed to fetch cart:', err)
-      if (err.response?.status === 401) {
-        // Token expired or invalid
-        setCartItems([])
-      }
+      console.error('Failed to fetch cart:', err);
+      setCartItems([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [user?._id, token])
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (authLoading) return
-    if (user && token) {
-      fetchCart()
-    } else {
-      setCartItems([])
-      setLoading(false)
-    }
-  }, [authLoading, user, token, fetchCart])
+    fetchCart();
+  }, [fetchCart]);
 
   const addToCart = async (product, quantity = 1) => {
-    if (!user) {
-      toast.error('Please login first!')
-      return false
+    if (!isAuthenticated) {
+      toast.error('Please login first!');
+      return false;
     }
     
     try {
-      await axios.post(`${API_URL}/add`, 
-        { productId: product._id, quantity: quantity },
-        { 
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } 
-        }
-      )
-      
-      await fetchCart()
-      toast.success(`${product.name} added to cart!`)
-      return true
+      await cartAPI.addToCart(product._id, quantity);
+      await fetchCart();
+      toast.success(`${product.name} added to cart!`);
+      return true;
     } catch (err) {
-      console.error('Add to cart error:', err)
-      toast.error(err.response?.data?.message || 'Failed to add to cart')
-      return false
+      console.error('Add to cart error:', err);
+      toast.error(err.response?.data?.message || 'Failed to add to cart');
+      return false;
     }
-  }
+  };
 
-  const removeFromCart = async (id) => {
+  const removeFromCart = async (productId) => {
     try {
-      await axios.delete(`${API_URL}/remove/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      await fetchCart()
-      toast.info('Removed from cart')
-      return true
+      await cartAPI.removeFromCart(productId);
+      await fetchCart();
+      toast.info('Removed from cart');
+      return true;
     } catch (err) {
-      console.error('Remove error:', err)
-      toast.error('Failed to remove')
-      return false
+      console.error('Remove error:', err);
+      toast.error('Failed to remove');
+      return false;
     }
-  }
+  };
 
-  const updateQuantity = async (id, quantity) => {
+  const updateQuantity = async (productId, quantity) => {
     if (quantity < 1) {
-      await removeFromCart(id)
-      return
+      return removeFromCart(productId);
     }
     
     try {
-      await axios.put(`${API_URL}/update/${id}`,
-        { quantity },
-        { 
-          headers: { 
-            'Authorization': `Bearer ${token}`
-          } 
-        }
-      )
-      await fetchCart()
-      return true
+      await cartAPI.updateQuantity(productId, quantity);
+      await fetchCart();
+      return true;
     } catch (err) {
-      console.error('Update quantity error:', err)
-      toast.error('Failed to update quantity')
-      return false
+      console.error('Update quantity error:', err);
+      toast.error('Failed to update quantity');
+      return false;
     }
-  }
+  };
 
-  // ✅ Clear cart after successful payment
   const clearCart = async () => {
     try {
-      // Clear from backend
-      await axios.delete(`${API_URL}/clear`, { 
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      // Clear local state
-      setCartItems([])
-      console.log('✅ Cart cleared successfully')
-      return true
+      await cartAPI.clearCart();
+      setCartItems([]);
+      toast.success('Cart cleared');
+      return true;
     } catch (err) {
-      console.error('Clear cart error:', err)
-      // Even if backend fails, clear local state
-      setCartItems([])
-      return false
+      console.error('Clear cart error:', err);
+      setCartItems([]);
+      return false;
     }
-  }
+  };
 
-  // ✅ Local clear cart (without API call) - for immediate UI update
-  const clearLocalCart = () => {
-    setCartItems([])
-    console.log('✅ Local cart cleared')
-  }
-
-  const totalPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0)
+  const totalPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <CartContext.Provider value={{
@@ -161,7 +120,6 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
-      clearLocalCart,
       totalPrice,
       totalItems,
       loading,
@@ -169,14 +127,5 @@ export const CartProvider = ({ children }) => {
     }}>
       {children}
     </CartContext.Provider>
-  )
-}
-
-// eslint-disable-next-line react-refresh/only-export-components -- context hook paired with provider
-export const useCart = () => {
-  const context = useContext(CartContext)
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider')
-  }
-  return context
-}
+  );
+};

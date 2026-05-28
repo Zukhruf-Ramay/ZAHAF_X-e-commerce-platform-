@@ -7,6 +7,7 @@ const ProductDetail = () => {
   const { id } = useParams()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -15,9 +16,15 @@ const ProductDetail = () => {
   const [modalImage, setModalImage] = useState('')
   const { addToCart } = useCart()
 
+  // ✅ FIXED: Use environment variable for API URL
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   const getAllImages = useCallback(() => {
     if (product?.images && product.images.length > 0) {
       return product.images
+    }
+    if (product?.mainImage) {
+      return [product.mainImage]
     }
     if (product?.image) {
       return [product.image]
@@ -27,13 +34,56 @@ const ProductDetail = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    axios.get(`http://localhost:5000/api/products/${id}`)
-      .then(res => {
-        setProduct(res.data)
+    
+    // ✅ FIXED: Better error handling and response parsing
+    const fetchProduct = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        console.log('Fetching product ID:', id)
+        console.log('API URL:', `${API_URL}/api/products/${id}`)
+        
+        const res = await axios.get(`${API_URL}/api/products/${id}`)
+        
+        console.log('API Response:', res.data)
+        
+        // ✅ FIXED: Handle different response structures
+        let productData = null
+        if (res.data.product) {
+          productData = res.data.product
+        } else if (res.data.data) {
+          productData = res.data.data
+        } else {
+          productData = res.data
+        }
+        
+        if (productData && productData._id) {
+          setProduct(productData)
+        } else {
+          setError('Product not found')
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err)
+        console.error('Error response:', err.response)
+        
+        if (err.response?.status === 404) {
+          setError('Product not found')
+        } else {
+          setError(err.response?.data?.message || 'Failed to load product')
+        }
+      } finally {
         setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [id])
+      }
+    }
+    
+    if (id) {
+      fetchProduct()
+    } else {
+      setError('No product ID provided')
+      setLoading(false)
+    }
+  }, [id, API_URL])
 
   // Keyboard Navigation for Images
   useEffect(() => {
@@ -59,6 +109,8 @@ const ProductDetail = () => {
   }, [product, getAllImages, isImageModalOpen])
 
   const handleAddToCart = () => {
+    if (!product) return
+    
     for (let i = 0; i < quantity; i++) {
       addToCart(product)
     }
@@ -73,19 +125,42 @@ const ProductDetail = () => {
 
   const images = getAllImages()
 
+  // ✅ Loading state
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading product details...</p>
+        </div>
       </div>
     )
   }
 
+  // ✅ Error state
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto bg-red-50 p-8 rounded-lg">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Error</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link to="/products" className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+            Back to Products
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // ✅ Product not found state
   if (!product) {
     return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold">Product not found!</h2>
-        <Link to="/products" className="text-blue-500 mt-4 inline-block">Back to Products</Link>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Product not found!</h2>
+          <Link to="/products" className="text-blue-500 mt-4 inline-block">Back to Products</Link>
+        </div>
       </div>
     )
   }
@@ -118,6 +193,9 @@ const ProductDetail = () => {
               alt={product.name}
               className="w-full h-96 object-contain p-4 transition-transform duration-500 hover:scale-105 cursor-pointer"
               onClick={() => handleImageClick(images[selectedImage])}
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/600x400?text=No+Image'
+              }}
             />
             
             {/* Zoom Icon */}
@@ -166,6 +244,9 @@ const ProductDetail = () => {
                     src={img}
                     alt={`${product.name} view ${idx + 1}`}
                     className="w-full h-20 object-cover"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'
+                    }}
                   />
                 </button>
               ))}
@@ -229,26 +310,28 @@ const ProductDetail = () => {
           <p className="text-gray-600 leading-relaxed">{product.description}</p>
 
           {/* Quantity Selector */}
-          <div className="flex items-center gap-4">
-            <span className="font-semibold text-gray-700"><i className="fas fa-cubes mr-1"></i> Quantity:</span>
-            <div className="flex items-center gap-3 border rounded-lg">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100"
-              >
-                <i className="fas fa-minus"></i>
-              </button>
-              <span className="w-12 text-center font-semibold">{quantity}</span>
-              <button
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                disabled={quantity >= product.stock}
-                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
-              >
-                <i className="fas fa-plus"></i>
-              </button>
+          {product.stock > 0 && (
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-gray-700"><i className="fas fa-cubes mr-1"></i> Quantity:</span>
+              <div className="flex items-center gap-3 border rounded-lg">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 flex items-center justify-center hover:bg-gray-100"
+                >
+                  <i className="fas fa-minus"></i>
+                </button>
+                <span className="w-12 text-center font-semibold">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  disabled={quantity >= product.stock}
+                  className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <i className="fas fa-plus"></i>
+                </button>
+              </div>
+              <span className="text-gray-500 text-sm">Max {product.stock} units</span>
             </div>
-            <span className="text-gray-500 text-sm">Max {product.stock} units</span>
-          </div>
+          )}
 
           {/* Add to Cart Button */}
           <button

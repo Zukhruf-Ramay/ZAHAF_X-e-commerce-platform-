@@ -82,7 +82,9 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} ZAHAF-X. All rights reserved.
           </p>
           <p className="text-gray-600 text-xs mt-2">
-            Made with <i className="fas fa-heart text-red-500"></i> for Electronics Lovers
+            Made for Electronics Lovers
+             {/* with <i className="fas fa-heart text-red-500"></i> */}
+              
           </p>
         </div>
       </div>

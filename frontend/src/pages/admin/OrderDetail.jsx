@@ -23,7 +23,8 @@ const OrderDetail = () => {
       console.log('📦 Fetching order ID:', id)
       console.log('🔑 Token available:', !!token)
       
-      const res = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+      // ✅ ONLY THIS LINE CHANGED - Added /admin/ in the URL
+      const res = await axios.get(`http://localhost:5000/api/orders/admin/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

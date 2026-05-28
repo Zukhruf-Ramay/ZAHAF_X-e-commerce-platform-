@@ -1,20 +1,22 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const wishlistSchema = new mongoose.Schema({
-  user: { 
-    type: mongoose.Schema.Types.ObjectId, 
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true, 
-    unique: true,
-    index: true 
+    required: true,
+    unique: true
   },
-  items: [{ 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Product' 
+  items: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
   }]
-}, { 
-  timestamps: true 
-})
+}, {
+  timestamps: true
+});
 
-const Wishlist = mongoose.model('Wishlist', wishlistSchema)
-export default Wishlist
+// Create index for faster queries
+wishlistSchema.index({ user: 1 });
+
+const Wishlist = mongoose.model('Wishlist', wishlistSchema);
+export default Wishlist;

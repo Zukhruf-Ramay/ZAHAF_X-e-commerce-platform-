@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useAuth } from '../../context/AuthContext'
 import { toast } from 'react-toastify'
 import { Link, useLocation } from 'react-router-dom'
+import { ordersAPI } from '../../services/api'  // ✅ ADD THIS IMPORT
 
 const ManageOrders = () => {
   const { user, token } = useAuth()
@@ -23,33 +24,21 @@ const ManageOrders = () => {
 
   const fetchAllOrders = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/orders', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-User-ID': user?._id
-        }
-      })
-      setAllOrders(res.data)
+      // ✅ Use ordersAPI instead of direct axios call
+      const res = await ordersAPI.adminGetOrders()
+      setAllOrders(res.data || [])
     } catch (err) {
       console.error('Fetch all orders error:', err)
+      toast.error('Failed to fetch orders')
     }
   }
 
   const fetchFilteredOrders = async () => {
     try {
       setLoading(true)
-      let url = 'http://localhost:5000/api/orders'
-      if (statusFilter !== 'all') {
-        url = `http://localhost:5000/api/orders?status=${statusFilter}`
-      }
-      
-      const res = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-User-ID': user?._id
-        }
-      })
-      setFilteredOrders(res.data)
+      // ✅ Use ordersAPI with status filter
+      const res = await ordersAPI.adminGetOrders(statusFilter)
+      setFilteredOrders(res.data || [])
     } catch (err) {
       console.error('Fetch filtered orders error:', err)
       toast.error('Failed to fetch orders')
@@ -67,15 +56,8 @@ const ManageOrders = () => {
 
   const updateStatus = async (orderId, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/orders/${orderId}/status`,
-        { status },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'X-User-ID': user?._id
-          }
-        }
-      )
+      // ✅ Use ordersAPI to update status
+      await ordersAPI.adminUpdateStatus(orderId, status)
       toast.success(`Status updated to ${status}`)
       fetchAllOrders()
       fetchFilteredOrders()
@@ -95,7 +77,7 @@ const ManageOrders = () => {
     }
   }
 
-  // ✅ Counts including failed orders
+  // Counts including failed orders
   const counts = {
     all: allOrders.length,
     pending: allOrders.filter(o => o.status === 'pending').length,
@@ -120,7 +102,7 @@ const ManageOrders = () => {
         <i className="fas fa-truck mr-2 text-blue-500"></i> Manage Orders
       </h1>
 
-      {/* ✅ Status Filter Tabs - Added Failed tab */}
+      {/* Status Filter Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <nav className="flex flex-wrap gap-2">
           <button
@@ -183,7 +165,6 @@ const ManageOrders = () => {
           >
             Cancelled ({counts.cancelled})
           </button>
-          {/* ✅ Failed Payments Tab */}
           <button
             onClick={() => setStatusFilter('failed')}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
@@ -219,15 +200,23 @@ const ManageOrders = () => {
                   <td className="px-6 py-4">{order.user?.name || 'N/A'}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
+                   </td>
                   <td className="px-6 py-4 font-semibold">
                     Rs. {order.totalAmount?.toLocaleString()}
-                  </td>
+                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </td>
+                    <select
+                      value={order.status}
+                      onChange={(e) => updateStatus(order._id, e.target.value)}
+                      className={`px-2 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer ${getStatusColor(order.status)}`}
+                    >
+                      <option value="pending">pending</option>
+                      <option value="processing">processing</option>
+                      <option value="shipped">shipped</option>
+                      <option value="delivered">delivered</option>
+                      <option value="cancelled">cancelled</option>
+                    </select>
+                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
@@ -237,7 +226,7 @@ const ManageOrders = () => {
                     }`}>
                       {order.paymentStatus}
                     </span>
-                  </td>
+                   </td>
                   <td className="px-6 py-4">
                     <Link 
                       to={`/admin/orders/${order._id}`} 
@@ -245,8 +234,8 @@ const ManageOrders = () => {
                     >
                       View Details
                     </Link>
-                  </td>
-                </tr>
+                   </td>
+                 </tr>
               ))}
               {filteredOrders.length === 0 && (
                 <tr>

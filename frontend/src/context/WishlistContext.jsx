@@ -1,26 +1,32 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useAuth } from './AuthContext'
-import axios from 'axios'
-import { toast } from 'react-toastify'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { wishlistAPI } from '../services/api';
+import { toast } from 'react-toastify';
 
-const WishlistContext = createContext()
+const WishlistContext = createContext();
+
+export const useWishlist = () => {
+  const context = useContext(WishlistContext);
+  if (!context) {
+    throw new Error('useWishlist must be used within WishlistProvider');
+  }
+  return context;
+};
 
 export const WishlistProvider = ({ children }) => {
-  const { user, token, loading: authLoading } = useAuth()
-  const [wishlistItems, setWishlistItems] = useState([])
-  const [loading, setLoading] = useState(true)
-  const API_URL = 'http://localhost:5000/api/wishlist'
+  const { user, isAuthenticated } = useAuth();
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchWishlist = useCallback(async () => {
-    if (!user?._id || !token) return
+    if (!isAuthenticated) {
+      setWishlistItems([]);
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const response = await axios.get(API_URL, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
+      const response = await wishlistAPI.getWishlist();
       const items = response.data.items?.map(product => ({
         _id: product._id,
         name: product.name,
@@ -28,84 +34,69 @@ export const WishlistProvider = ({ children }) => {
         description: product.description,
         category: product.category,
         stock: product.stock,
-        image: product.mainImage || (product.images?.[0]) || product.image || 'https://placehold.co/400x400/e2e8f0/64748b?text=No+Image',
-        mainImage: product.mainImage,
-        images: product.images
-      })) || []
-
-      setWishlistItems(items)
+        image: product.mainImage || (product.images?.[0]) || 'https://placehold.co/400x400',
+      })) || [];
+      
+      setWishlistItems(items);
     } catch (err) {
-      console.error('Failed to fetch wishlist', err)
-      setWishlistItems([])
+      console.error('Failed to fetch wishlist:', err);
+      setWishlistItems([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [user?._id, token])
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (authLoading) return
-    if (user && token) {
-      fetchWishlist()
-    } else {
-      setWishlistItems([])
-      setLoading(false)
-    }
-  }, [authLoading, user, token, fetchWishlist])
+    fetchWishlist();
+  }, [fetchWishlist]);
 
   const addToWishlist = async (product) => {
-    if (!user) {
-      toast.error('Please login first!')
-      return
+    if (!isAuthenticated) {
+      toast.error('Please login first!');
+      return false;
     }
+    
     try {
-      await axios.post(`${API_URL}/add`,
-        { productId: product._id },
-        { 
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } 
-        }
-      )
-      await fetchWishlist()
-      toast.success(`❤️ ${product.name} added to wishlist`)
+      await wishlistAPI.addToWishlist(product._id);
+      await fetchWishlist();
+      toast.success(`❤️ ${product.name} added to wishlist`);
+      return true;
     } catch (err) {
-      console.error('Add to wishlist error:', err)
-      toast.error('Failed to add to wishlist')
+      console.error('Add to wishlist error:', err);
+      toast.error('Failed to add to wishlist');
+      return false;
     }
-  }
+  };
 
-  const removeFromWishlist = async (id) => {
+  const removeFromWishlist = async (productId) => {
     try {
-      await axios.delete(`${API_URL}/remove/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      await fetchWishlist()
-      toast.info('Removed from wishlist')
+      await wishlistAPI.removeFromWishlist(productId);
+      await fetchWishlist();
+      toast.info('Removed from wishlist');
+      return true;
     } catch (err) {
-      console.error('Remove from wishlist error:', err)
-      toast.error('Failed to remove')
+      console.error('Remove from wishlist error:', err);
+      toast.error('Failed to remove');
+      return false;
     }
-  }
-
-  const isInWishlist = (id) => {
-    return wishlistItems.some(item => item._id === id)
-  }
+  };
 
   const clearWishlist = async () => {
     try {
-      await axios.delete(`${API_URL}/clear`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      setWishlistItems([])
-      toast.success('Wishlist cleared successfully!')
+      await wishlistAPI.clearWishlist();
+      setWishlistItems([]);
+      toast.success('Wishlist cleared!');
+      return true;
     } catch (err) {
-      console.error('Clear wishlist error:', err)
-      toast.error('Failed to clear wishlist')
+      console.error('Clear wishlist error:', err);
+      toast.error('Failed to clear wishlist');
+      return false;
     }
-  }
+  };
+
+  const isInWishlist = (productId) => {
+    return wishlistItems.some(item => item._id === productId);
+  };
 
   return (
     <WishlistContext.Provider value={{
@@ -114,18 +105,10 @@ export const WishlistProvider = ({ children }) => {
       removeFromWishlist,
       isInWishlist,
       clearWishlist,
-      loading
+      loading,
+      itemCount: wishlistItems.length
     }}>
       {children}
     </WishlistContext.Provider>
-  )
-}
-
-// eslint-disable-next-line react-refresh/only-export-components -- context hook paired with provider
-export const useWishlist = () => {
-  const context = useContext(WishlistContext)
-  if (!context) {
-    throw new Error('useWishlist must be used within WishlistProvider')
-  }
-  return context
-}
+  );
+};

@@ -37,7 +37,7 @@ const ProductCard = ({ product }) => {
         <i className={`fas fa-heart transition-colors duration-300 ${isInWishlist(product._id) ? 'text-red-500' : 'text-gray-400'}`}></i>
       </button>
 
-      {/* Image Section with Zoom Effect - ONLY image zooms, card stays */}
+      {/* Image Section with Zoom Effect */}
       <div className="relative overflow-hidden bg-gray-100">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
@@ -63,7 +63,7 @@ const ProductCard = ({ product }) => {
         )}
       </div>
 
-      {/* Product Details - No hover lift */}
+      {/* Product Details */}
       <div className="p-3 sm:p-4">
         {/* Category with Icon */}
         <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1">
@@ -71,8 +71,8 @@ const ProductCard = ({ product }) => {
           {product.category || 'Electronics'}
         </p>
         
-        {/* Product Name with Link Hover */}
-        <Link to={`/products/${product._id}`}>
+        {/* ✅ FIXED: Product Name Link - Changed from /products/ to /product/ */}
+        <Link to={`/product/${product._id}`}>
           <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-2 hover:text-blue-500 transition-colors duration-300 line-clamp-2">
             {product.name}
           </h3>
@@ -90,8 +90,9 @@ const ProductCard = ({ product }) => {
 
         {/* Action Buttons */}
         <div className="flex gap-2 mt-2">
+          {/* ✅ FIXED: Details Button Link - Changed from /products/ to /product/ */}
           <Link
-            to={`/products/${product._id}`}
+            to={`/product/${product._id}`}
             className="flex-1 text-center border-2 border-blue-500 text-blue-500 py-1.5 sm:py-2 rounded-lg text-sm font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 hover:scale-105"
           >
             <i className="fas fa-eye mr-1"></i> Details

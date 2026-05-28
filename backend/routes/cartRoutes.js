@@ -1,6 +1,6 @@
 import express from 'express'
 import Cart from '../models/Cart.js'
-import { protect } from '../middleware/auth.js'
+import { protect } from '../middleware/authMiddleware.js'  // ✅ FIXED: Correct file name
 
 const router = express.Router()
 
@@ -89,7 +89,7 @@ router.delete('/remove/:productId', protect, async (req, res) => {
   }
 })
 
-// ✅ NEW: Clear entire cart
+// Clear entire cart
 router.delete('/clear', protect, async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user._id })
