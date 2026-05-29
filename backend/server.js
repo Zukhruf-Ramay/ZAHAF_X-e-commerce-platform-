@@ -14,9 +14,13 @@ import paymentRoutes from './routes/paymentRoutes.js'
 
 const app = express()
 
-// ✅ FIXED CORS - Allow all necessary headers
+// ✅ UPDATED CORS - Added production frontend URL
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:3000',
+    'https://zahaf-x-e-commerce-platform.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -64,7 +68,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message })
 })
 
-// MongoDB connection - FIXED: Changed MONGO_URI to MONGODB_URI
+// MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ MongoDB connected successfully')
@@ -72,7 +76,6 @@ mongoose.connect(process.env.MONGODB_URI)
     const PORT = process.env.PORT || 5000
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`)
-      console.log(`📍 Frontend URL: http://localhost:3000`)
       console.log(`📍 Health check: http://localhost:5000/api/health`)
     })
   })
