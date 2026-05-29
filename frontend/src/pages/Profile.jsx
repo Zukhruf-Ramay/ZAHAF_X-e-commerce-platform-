@@ -9,11 +9,15 @@ const Profile = () => {
   const [name, setName] = useState(user?.name || '')
   const [updating, setUpdating] = useState(false)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
     setUpdating(true)
     try {
-      const res = await axios.put('http://localhost:5000/api/auth/profile', { name }, {
+      // ✅ FIXED: Use API_URL
+      const res = await axios.put(`${API_URL}/api/auth/profile`, { name }, {
         headers: { Authorization: `Bearer ${token}` }
       })
       updateProfile(res.data)

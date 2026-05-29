@@ -8,13 +8,17 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await axios.post('http://localhost:5000/api/auth/forgot-password', { email })
+      // ✅ FIXED: Use API_URL
+      await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
       toast.success('OTP sent to your email!')
-      // ✅ Redirect to reset password page with email
+      // Redirect to reset password page with email
       navigate('/reset-password', { state: { email } })
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong')

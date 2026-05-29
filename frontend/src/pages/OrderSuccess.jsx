@@ -10,6 +10,9 @@ const OrderSuccess = () => {
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   useEffect(() => {
     window.scrollTo(0, 0)
     
@@ -20,7 +23,8 @@ const OrderSuccess = () => {
       }
       
       try {
-        const response = await axios.get(`http://localhost:5000/api/orders/${orderId}`, {
+        // ✅ FIXED: Use API_URL
+        const response = await axios.get(`${API_URL}/api/orders/${orderId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -34,7 +38,7 @@ const OrderSuccess = () => {
     }
     
     fetchOrder()
-  }, [orderId, token, user?._id])
+  }, [orderId, token, user?._id, API_URL])
 
   const getPaymentMethodText = (method) => {
     switch(method) {

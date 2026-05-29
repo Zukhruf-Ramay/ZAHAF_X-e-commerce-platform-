@@ -35,14 +35,18 @@ const Home = () => {
   const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   useEffect(() => {
-    axios.get('http://localhost:5000/api/products')
+    // ✅ FIXED: Use API_URL
+    axios.get(`${API_URL}/api/products`)
       .then(res => {
         setProducts(res.data.slice(0, 8))
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [API_URL])
 
   // Auto slide
   useEffect(() => {
@@ -114,13 +118,6 @@ const Home = () => {
                 </svg>
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/90 to-blue-700/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Link>
-
-              {/* <Link
-                to="/products"
-                className="inline-flex items-center justify-center px-8 py-3.5 font-semibold text-white border border-white/20 rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-300 backdrop-blur-sm"
-              >
-                View All Products
-              </Link> */}
             </div>
 
             {/* Trust Badges - More transparent */}

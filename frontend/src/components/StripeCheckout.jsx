@@ -8,6 +8,9 @@ const StripeCheckout = ({ orderId, amount, disabled, onSuccess, onError }) => {
   const [paymentInitiated, setPaymentInitiated] = useState(false)
   const paymentInitiatedRef = useRef(false)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   const handleCheckout = async () => {
     // ✅ Prevent multiple clicks
     if (paymentInitiatedRef.current || loading || paymentInitiated) {
@@ -28,8 +31,9 @@ const StripeCheckout = ({ orderId, amount, disabled, onSuccess, onError }) => {
     try {
       console.log('Creating Stripe session for order:', orderId)
       
+      // ✅ FIXED: Use API_URL
       const response = await axios.post(
-        'http://localhost:5000/api/payments/create-checkout-session',
+        `${API_URL}/api/payments/create-checkout-session`,
         { orderId, amount },
         { headers: { Authorization: `Bearer ${token}` } }
       )

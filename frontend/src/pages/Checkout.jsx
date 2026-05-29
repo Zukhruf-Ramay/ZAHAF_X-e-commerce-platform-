@@ -10,6 +10,10 @@ const Checkout = () => {
   const { cartItems, totalPrice, clearCart } = useCart()
   const { user, token } = useAuth()
   const navigate = useNavigate()
+  
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+  
   const [form, setForm] = useState({
     street: '', city: '', zip: '', phone: '',
     email: user?.email || ''
@@ -121,7 +125,8 @@ const Checkout = () => {
 
   const checkOrderStatus = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/orders/${orderId}`, {
+      // ✅ FIXED: Use API_URL
+      const res = await axios.get(`${API_URL}/api/orders/${orderId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       setOrder(res.data)
@@ -192,7 +197,8 @@ const Checkout = () => {
     
     setCreatingOrder(true)
     try {
-      const orderResponse = await axios.post('http://localhost:5000/api/orders', 
+      // ✅ FIXED: Use API_URL
+      const orderResponse = await axios.post(`${API_URL}/api/orders`, 
         { ...createOrderData(), paymentMethod: 'card', paymentStatus: 'pending' },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -219,12 +225,14 @@ const Checkout = () => {
     
     setLoading(true)
     try {
-      const orderResponse = await axios.post('http://localhost:5000/api/orders', 
+      // ✅ FIXED: Use API_URL
+      const orderResponse = await axios.post(`${API_URL}/api/orders`, 
         { ...createOrderData(), paymentMethod: 'cod', paymentStatus: 'pending' },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       
-      await axios.delete('http://localhost:5000/api/cart/clear', {
+      // ✅ FIXED: Use API_URL
+      await axios.delete(`${API_URL}/api/cart/clear`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       clearCart()
@@ -245,7 +253,8 @@ const Checkout = () => {
     paymentInitiatedRef.current = true
     
     try {
-      await axios.post('http://localhost:5000/api/payments/payment-success', {
+      // ✅ FIXED: Use API_URL
+      await axios.post(`${API_URL}/api/payments/payment-success`, {
         orderId: orderId,
         sessionId: paymentData?.sessionId,
         paymentDetails: {
@@ -258,7 +267,8 @@ const Checkout = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
-      await axios.delete('http://localhost:5000/api/cart/clear', {
+      // ✅ FIXED: Use API_URL
+      await axios.delete(`${API_URL}/api/cart/clear`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       clearCart()
@@ -294,7 +304,8 @@ const Checkout = () => {
   const handleCancelFailedOrder = async () => {
     if (window.confirm('Cancel this failed order? You can create a new order.')) {
       try {
-        await axios.put(`http://localhost:5000/api/orders/${orderId}/cancel`, {}, {
+        // ✅ FIXED: Use API_URL
+        await axios.put(`${API_URL}/api/orders/${orderId}/cancel`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         toast.success('Failed order cancelled')

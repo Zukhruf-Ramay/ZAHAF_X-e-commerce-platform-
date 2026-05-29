@@ -10,13 +10,21 @@ const Products = () => {
   const [priceRange, setPriceRange] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   useEffect(() => {
-    axios.get('http://localhost:5000/api/products')
+    // ✅ FIXED: Use API_URL
+    axios.get(`${API_URL}/api/products`)
       .then(res => {
         setProducts(res.data)
         setLoading(false)
       })
-  }, [])
+      .catch(err => {
+        console.error('Error fetching products:', err)
+        setLoading(false)
+      })
+  }, [API_URL])
 
   const filtered = products.filter(p => {
     // Search filter

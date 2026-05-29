@@ -17,6 +17,9 @@ const PaymentSuccess = () => {
   const [loading, setLoading] = useState(true)
   const processed = useRef(false)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   useEffect(() => {
     const processPayment = async () => {
       if (processed.current) return
@@ -25,7 +28,8 @@ const PaymentSuccess = () => {
       if (orderId && !sessionId) {
         processed.current = true
         try {
-          const response = await axios.get(`http://localhost:5000/api/orders/${orderId}`, {
+          // ✅ FIXED: Use API_URL
+          const response = await axios.get(`${API_URL}/api/orders/${orderId}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
           setOrder(response.data)
@@ -45,13 +49,15 @@ const PaymentSuccess = () => {
       if (sessionId) {
         processed.current = true
         try {
+          // ✅ FIXED: Use API_URL
           // Get order by session (no auth needed)
-          const response = await axios.get(`http://localhost:5000/api/payments/order-by-session/${sessionId}`)
+          const response = await axios.get(`${API_URL}/api/payments/order-by-session/${sessionId}`)
           const orderData = response.data
           
           // If payment status is still pending, update it
           if (orderData.paymentStatus !== 'paid') {
-            await axios.post(`http://localhost:5000/api/payments/payment-success`, {
+            // ✅ FIXED: Use API_URL
+            await axios.post(`${API_URL}/api/payments/payment-success`, {
               sessionId: sessionId
             })
             orderData.paymentStatus = 'paid'
@@ -81,7 +87,7 @@ const PaymentSuccess = () => {
     }
     
     processPayment()
-  }, [sessionId, orderId, token, clearCart, refreshOrders])
+  }, [sessionId, orderId, token, clearCart, refreshOrders, API_URL])
 
   const getPaymentMethodText = (method) => {
     switch(method) {

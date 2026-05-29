@@ -15,11 +15,15 @@ const OrderDetail = () => {
   const [cancelling, setCancelling] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   const fetchOrder = async (showToast = false) => {
     if (!token) return
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+      // ✅ FIXED: Use API_URL
+      const response = await axios.get(`${API_URL}/api/orders/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` },
         params: { _t: Date.now() }
       })
@@ -61,7 +65,8 @@ const OrderDetail = () => {
     
     setCancelling(true)
     try {
-      const response = await axios.put(`http://localhost:5000/api/orders/${id}/cancel`, {}, {
+      // ✅ FIXED: Use API_URL
+      const response = await axios.put(`${API_URL}/api/orders/${id}/cancel`, {}, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
@@ -136,7 +141,7 @@ const OrderDetail = () => {
           <i className="fas fa-arrow-left mr-1"></i> Back to My Orders
         </button>
         
-        {/* ✅ Working Refresh Button */}
+        {/* Working Refresh Button */}
         <button
           onClick={handleRefresh}
           disabled={refreshing}

@@ -11,6 +11,9 @@ const OrderDetail = () => {
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // ✅ ADDED: API_URL for production compatibility
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
   const fetchOrder = useCallback(async () => {
     if (!token) {
       console.log('No token available')
@@ -23,8 +26,8 @@ const OrderDetail = () => {
       console.log('📦 Fetching order ID:', id)
       console.log('🔑 Token available:', !!token)
       
-      // ✅ ONLY THIS LINE CHANGED - Added /admin/ in the URL
-      const res = await axios.get(`http://localhost:5000/api/orders/admin/${id}`, {
+      // ✅ FIXED: Use API_URL
+      const res = await axios.get(`${API_URL}/api/orders/admin/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -48,7 +51,7 @@ const OrderDetail = () => {
     } finally {
       setLoading(false)
     }
-  }, [id, token, navigate])
+  }, [id, token, navigate, API_URL])
 
   useEffect(() => {
     if (user && token) {
@@ -68,8 +71,9 @@ const OrderDetail = () => {
     try {
       console.log('Updating order status:', id, 'to', status)
       
+      // ✅ FIXED: Use API_URL
       await axios.put(
-        `http://localhost:5000/api/orders/${id}/status`,
+        `${API_URL}/api/orders/${id}/status`,
         { status },
         { 
           headers: { 
