@@ -78,7 +78,7 @@ const FAQ = () => {
           ))}
         </div>
 
-        <div className="mt-8 pt-6 border-t text-center">
+        {/* <div className="mt-8 pt-6 border-t text-center">
           <p className="text-gray-600 mb-4">Still have questions?</p>
           <Link 
             to="/" 
@@ -86,7 +86,7 @@ const FAQ = () => {
           >
             Contact Support
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   )
