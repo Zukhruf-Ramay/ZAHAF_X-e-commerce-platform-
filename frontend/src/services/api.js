@@ -1,7 +1,20 @@
 import axios from 'axios';
 
+// ==========================================
+// DEBUG - Check environment variables (REMOVE AFTER TESTING)
+// ==========================================
+console.log('=== ENVIRONMENT DEBUG ===');
+console.log('import.meta.env.MODE:', import.meta.env.MODE);
+console.log('import.meta.env.PROD:', import.meta.env.PROD);
+console.log('import.meta.env.DEV:', import.meta.env.DEV);
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('========================');
+
 // API Base URL
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+console.log('API_URL being used:', API_URL);
+console.log('========================');
 
 // Create axios instance
 const api = axios.create({
