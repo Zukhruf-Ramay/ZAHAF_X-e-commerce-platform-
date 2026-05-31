@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { cartAPI } from '../services/api';
 import { toast } from 'react-toastify';
@@ -18,6 +18,9 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pendingOrderId, setPendingOrderId] = useState(localStorage.getItem('pendingOrderId') || null);
+  
+  // ✅ Add lock to prevent duplicate requests
+  const addToCartLock = useRef(false);
 
   const fetchCart = useCallback(async () => {
     if (!isAuthenticated) {
@@ -57,13 +60,18 @@ export const CartProvider = ({ children }) => {
       return false;
     }
     
+    // ✅ Prevent multiple rapid clicks
+    if (addToCartLock.current) {
+      return false;
+    }
+    
+    addToCartLock.current = true;
+    
     try {
       await cartAPI.addToCart(product._id, quantity);
       await fetchCart();
       
-      // ✅ Update pendingOrderId if exists
       if (pendingOrderId) {
-        // Optional: Update the pending order with new cart items
         console.log('Adding to existing pending order:', pendingOrderId);
       }
       
@@ -73,6 +81,10 @@ export const CartProvider = ({ children }) => {
       console.error('Add to cart error:', err);
       toast.error(err.response?.data?.message || 'Failed to add to cart');
       return false;
+    } finally {
+      setTimeout(() => {
+        addToCartLock.current = false;
+      }, 500);
     }
   };
 
@@ -118,13 +130,11 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ New method: Clear pending order
   const clearPendingOrder = () => {
     localStorage.removeItem('pendingOrderId');
     setPendingOrderId(null);
   };
 
-  // ✅ New method: Set pending order ID
   const setPendingOrder = (orderId) => {
     localStorage.setItem('pendingOrderId', orderId);
     setPendingOrderId(orderId);
@@ -140,9 +150,9 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
-      clearPendingOrder,      // ✅ New
-      setPendingOrder,        // ✅ New
-      pendingOrderId,         // ✅ New
+      clearPendingOrder,
+      setPendingOrder,
+      pendingOrderId,
       totalPrice,
       totalItems,
       loading,
