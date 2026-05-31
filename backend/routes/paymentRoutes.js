@@ -1,130 +1,192 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { useCart } from '../context/CartContext'
-import axios from 'axios'
-import { toast } from 'react-toastify'
-import { useEffect, useState } from 'react'
+import express from 'express';
+import Stripe from 'stripe';
+import Order from '../models/Order.js';
+import Cart from '../models/Cart.js';
+import { protect } from '../middleware/authMiddleware.js';
+import config from '../config/index.js';
 
-const PaymentCancel = () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const orderId = searchParams.get('orderId')  // ✅ Must be 'orderId'
-  const reason = searchParams.get('reason')
-  const { token } = useAuth()
-  const { clearCart } = useCart()
-  const [loading, setLoading] = useState(false)
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-  useEffect(() => {
-    const cancelOrder = async () => {
-      if (orderId && token && !loading) {
-        setLoading(true)
-        try {
-          await axios.put(
-            `${API_URL}/api/orders/${orderId}/cancel`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-          localStorage.removeItem('pendingOrderId')
-          localStorage.removeItem('stripeSessionId')
-          await clearCart()
-          toast.info('Order has been cancelled')
-        } catch (error) {
-          console.error('Failed to cancel order:', error)
-        } finally {
-          setLoading(false)
-        }
-      }
+// Create checkout session
+router.post('/create-checkout-session', protect, async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const userId = req.user._id;
+    
+    const order = await Order.findById(orderId).populate('items.product');
+    
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
     }
     
-    cancelOrder()
-  }, [orderId, token, clearCart, API_URL, loading])
+    if (order.user.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    const lineItems = order.items.map((item) => ({
+      price_data: {
+        currency: 'pkr',
+        product_data: { 
+          name: item.product?.name || 'Product',
+          description: `Quantity: ${item.quantity} (includes 18% GST)`,
+        },
+        unit_amount: Math.round((item.price || 0) * 1.18 * 100),
+      },
+      quantity: item.quantity,
+    }));
+    
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${config.frontendUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${config.frontendUrl}/payment-cancel?orderId=${orderId}`,
+      metadata: { 
+        orderId: order._id.toString(), 
+        userId: userId.toString(),
+      },
+    });
+    
+    await Order.findByIdAndUpdate(orderId, { 
+      stripeSessionId: session.id,
+      paymentStatus: 'pending'
+    });
+    
+    console.log(`✅ Stripe session created for order ${orderId}`);
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error) {
+    console.error('Stripe error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 
-  const handleRetryPayment = () => {
-    const pendingOrderId = localStorage.getItem('pendingOrderId')
-    if (pendingOrderId) {
-      navigate(`/checkout?retry=${pendingOrderId}`)
+// Verify payment success after Stripe redirect
+router.get('/verify', async (req, res) => {
+  try {
+    const { session_id } = req.query;
+    
+    if (!session_id) {
+      console.error('Missing session_id in verify request');
+      return res.redirect(`${config.frontendUrl}/payment-cancel?reason=missing_session`);
+    }
+    
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    
+    if (session.payment_status === 'paid') {
+      await Order.findByIdAndUpdate(session.metadata.orderId, {
+        paymentStatus: 'completed',
+        orderStatus: 'confirmed',
+        stripePaymentIntentId: session.payment_intent
+      });
+      
+      await Cart.findOneAndUpdate(
+        { user: session.metadata.userId },
+        { items: [], totalPrice: 0 }
+      );
+      
+      console.log(`✅ Payment verified for order ${session.metadata.orderId}`);
+      
+      return res.redirect(`${config.frontendUrl}/payment-success?order=${session.metadata.orderId}`);
     } else {
-      navigate('/checkout')
+      console.log(`⚠️ Payment not completed: ${session.payment_status}`);
+      
+      return res.redirect(`${config.frontendUrl}/payment-cancel?reason=payment_not_completed`);
     }
+  } catch (error) {
+    console.error('Verification error:', error.message);
+    
+    return res.redirect(`${config.frontendUrl}/payment-cancel?reason=verification_failed`);
   }
+});
 
-  const handleCancelOrder = async () => {
-    const pendingOrderId = localStorage.getItem('pendingOrderId') || orderId
-    if (pendingOrderId && token) {
-      setLoading(true)
-      try {
-        await axios.put(
-          `${API_URL}/api/orders/${pendingOrderId}/cancel`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-        localStorage.removeItem('pendingOrderId')
-        localStorage.removeItem('stripeSessionId')
-        
-        await clearCart()
-        
-        toast.success('Order cancelled successfully')
-        navigate('/products')
-      } catch (error) {
-        toast.error('Failed to cancel order')
-      } finally {
-        setLoading(false)
-      }
+// Handle payment cancellation
+router.get('/cancel', async (req, res) => {
+  try {
+    const { orderId } = req.query;
+    
+    if (orderId) {
+      await Order.findByIdAndUpdate(orderId, {
+        paymentStatus: 'cancelled',
+        orderStatus: 'cancelled'
+      });
+      console.log(`❌ Payment cancelled for order ${orderId}`);
+    }
+    
+    return res.redirect(`${config.frontendUrl}/payment-cancel?orderId=${orderId || ''}`);
+  } catch (error) {
+    console.error('Cancel error:', error.message);
+    
+    return res.redirect(`${config.frontendUrl}/payment-cancel`);
+  }
+});
+
+// Verify payment for frontend (returns JSON)
+router.get('/verify-payment', async (req, res) => {
+  try {
+    const { session_id } = req.query;
+    
+    if (!session_id) {
+      return res.status(400).json({ success: false, error: 'Missing session_id' });
+    }
+    
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    
+    if (session.payment_status === 'paid') {
+      const order = await Order.findById(session.metadata.orderId);
+      return res.json({ 
+        success: true, 
+        order: order,
+        paymentStatus: session.payment_status 
+      });
     } else {
-      navigate('/products')
+      return res.json({ 
+        success: false, 
+        paymentStatus: session.payment_status 
+      });
     }
+  } catch (error) {
+    console.error('Verify payment error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
+});
 
-  const getErrorMessage = () => {
-    switch(reason) {
-      case 'payment_not_completed':
-        return 'Your payment was not completed. No charges were made.'
-      case 'verification_failed':
-        return 'We could not verify your payment. Please contact support.'
-      case 'missing_session':
-        return 'Payment session information is missing.'
-      default:
-        return 'Your payment was cancelled. No charges were made to your account.'
-    }
+// Stripe Webhook
+router.post('/webhook', async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+  
+  try {
+    const rawBody = req.rawBody || JSON.stringify(req.body);
+    
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error(`Webhook error: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+  
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    
+    await Order.findByIdAndUpdate(session.metadata.orderId, {
+      paymentStatus: 'completed',
+      orderStatus: 'confirmed',
+      stripePaymentIntentId: session.payment_intent
+    });
+    
+    await Cart.findOneAndUpdate(
+      { user: session.metadata.userId },
+      { items: [], totalPrice: 0 }
+    );
+    
+    console.log(`✅ Webhook: Payment completed for order ${session.metadata.orderId}`);
+  }
+  
+  res.json({ received: true });
+});
 
-  return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <div className="text-center max-w-2xl">
-        <div className="text-7xl mb-4">❌</div>
-        <h1 className="text-3xl font-bold text-red-600 mb-4">Payment Cancelled</h1>
-        <p className="text-gray-600 mb-8">
-          {getErrorMessage()}
-          <br />
-          You can try again or choose another payment method.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={handleRetryPayment}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-          >
-            {loading ? 'Processing...' : 'Try Again'}
-          </button>
-          <button
-            onClick={handleCancelOrder}
-            disabled={loading}
-            className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition disabled:opacity-50"
-          >
-            {loading ? 'Processing...' : 'Cancel Order'}
-          </button>
-          <Link
-            to="/products"
-            className="border border-blue-500 text-blue-500 px-6 py-3 rounded-lg hover:bg-blue-50 transition"
-          >
-            Continue Shopping
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default PaymentCancel
+export default router;
