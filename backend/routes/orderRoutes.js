@@ -1,7 +1,8 @@
 import express from 'express'
 import Order from '../models/Order.js'
-import Product from '../models/Product.js'  // ✅ ADD THIS
+import Product from '../models/Product.js'
 import { protect, admin } from '../middleware/authMiddleware.js'
+import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../utils/emailService.js'
 
 const router = express.Router()
 
@@ -68,7 +69,7 @@ router.get('/admin/:id', protect, admin, async (req, res) => {
   }
 })
 
-// ✅ Update order status (Admin only) - WITH STOCK RESTORE ON CANCELLATION
+// ✅ Update order status (Admin only) - WITH STOCK RESTORE ON CANCELLATION & EMAIL
 router.put('/:id/status', protect, admin, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
@@ -107,6 +108,12 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     }
     
     await order.save()
+    
+    // ✅ Send status update email when status changes
+    if (newStatus !== oldStatus) {
+      await sendOrderStatusEmail(order, oldStatus, newStatus);
+    }
+    
     res.json(order)
   } catch (err) {
     console.error('Error updating status:', err)
@@ -237,7 +244,7 @@ router.get('/:id', protect, async (req, res) => {
   }
 })
 
-// ✅ Create new order - WITH STOCK DEDUCTION FOR COD
+// ✅ Create new order - WITH STOCK DEDUCTION FOR COD & EMAIL
 router.post('/', protect, async (req, res) => {
   try {
     const orderData = { 
@@ -260,6 +267,12 @@ router.post('/', protect, async (req, res) => {
     }
     
     console.log(`✅ Order created: ${order._id} for user ${req.user._id}`)
+    
+    // ✅ Send order confirmation email for COD orders
+    if (orderData.paymentMethod === 'cod') {
+      await sendOrderConfirmationEmail(order);
+    }
+    
     res.status(201).json(order)
   } catch (err) {
     console.error('Error creating order:', err)

@@ -4,6 +4,7 @@ import Order from '../models/Order.js';
 import Cart from '../models/Cart.js';
 import { protect } from '../middleware/authMiddleware.js';
 import config from '../config/index.js';
+import { sendOrderConfirmationEmail, sendPaymentReceiptEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -86,6 +87,17 @@ router.get('/verify', async (req, res) => {
       );
       
       console.log(`✅ Payment verified for order ${session.metadata.orderId}`);
+      
+      // ✅ Send order confirmation and payment receipt emails for card payment
+      const updatedOrder = await Order.findById(session.metadata.orderId);
+      if (updatedOrder) {
+        await sendOrderConfirmationEmail(updatedOrder);
+        await sendPaymentReceiptEmail(updatedOrder, {
+          transactionId: session.payment_intent,
+          cardBrand: 'Credit/Debit Card',
+          cardLast4: '****'
+        });
+      }
       
       return res.redirect(`${config.frontendUrl}/payment-success?order=${session.metadata.orderId}`);
     } else {
@@ -184,6 +196,17 @@ router.post('/webhook', async (req, res) => {
     );
     
     console.log(`✅ Webhook: Payment completed for order ${session.metadata.orderId}`);
+    
+    // ✅ Send order confirmation and payment receipt emails
+    const updatedOrder = await Order.findById(session.metadata.orderId);
+    if (updatedOrder) {
+      await sendOrderConfirmationEmail(updatedOrder);
+      await sendPaymentReceiptEmail(updatedOrder, {
+        transactionId: session.payment_intent,
+        cardBrand: 'Credit/Debit Card',
+        cardLast4: '****'
+      });
+    }
   }
   
   res.json({ received: true });
