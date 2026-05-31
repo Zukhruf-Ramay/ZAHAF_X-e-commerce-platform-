@@ -21,6 +21,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-User-ID', 'Cache-Control', 'Pragma', 'Expires']
 }));
 
+// IMPORTANT: Webhook needs raw body - MUST be BEFORE express.json()
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), (req, res, next) => {
+  req.rawBody = req.body;
+  next();
+});
+
+// Regular JSON parsing for all other routes
 app.use(express.json({ limit: '10mb' }));
 
 // Request logging
@@ -45,6 +52,23 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
+
+// 404 handler for unknown routes
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.originalUrl 
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.message);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)
