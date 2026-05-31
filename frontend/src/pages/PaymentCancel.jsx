@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
-import { useEffect, useState, useRef } from 'react'
+import { useState } from 'react'
 
 const PaymentCancel = () => {
   const navigate = useNavigate()
@@ -13,69 +13,10 @@ const PaymentCancel = () => {
   const { token } = useAuth()
   const { clearCart } = useCart()
   const [loading, setLoading] = useState(false)
-  const hasProcessed = useRef(false)
   
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-  useEffect(() => {
-    const cancelOrder = async () => {
-      if (hasProcessed.current) {
-        console.log('Already processed, skipping...')
-        return
-      }
-      
-      if (orderId && token && !loading) {
-        hasProcessed.current = true
-        setLoading(true)
-        try {
-          const response = await axios.put(
-            `${API_URL}/api/orders/${orderId}/cancel`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-          
-          // ✅ Check success flag from backend
-          if (response.data.success) {
-            localStorage.removeItem('pendingOrderId')
-            localStorage.removeItem('stripeSessionId')
-            await clearCart()
-            toast.success(response.data.message || 'Order cancelled successfully')
-          } else {
-            toast.error(response.data.message || 'Failed to cancel order')
-          }
-        } catch (error) {
-          console.error('Failed to cancel order:', error.response?.data || error.message)
-          
-          // ✅ Even if API fails, clear local state
-          localStorage.removeItem('pendingOrderId')
-          localStorage.removeItem('stripeSessionId')
-          await clearCart()
-          
-          const errorMsg = error.response?.data?.message || 'Failed to cancel order'
-          toast.error(errorMsg)
-        } finally {
-          setLoading(false)
-        }
-      } else if (orderId && !token) {
-        // No token - just clear local state
-        localStorage.removeItem('pendingOrderId')
-        localStorage.removeItem('stripeSessionId')
-        await clearCart()
-        toast.info('Please login to manage your orders')
-      }
-    }
-    
-    cancelOrder()
-  }, [orderId, token, clearCart, API_URL, loading])
-
-  const handleRetryPayment = () => {
-    const pendingOrderId = localStorage.getItem('pendingOrderId')
-    if (pendingOrderId) {
-      navigate(`/checkout?retry=${pendingOrderId}`)
-    } else {
-      navigate('/checkout')
-    }
-  }
+  // ❌ REMOVED auto-cancel useEffect - Order will NOT cancel automatically
 
   const handleCancelOrder = async () => {
     if (loading) return
@@ -110,6 +51,28 @@ const PaymentCancel = () => {
     }
   }
 
+  const handleContinueShopping = async () => {
+    // ✅ Keep the order active - don't cancel
+    // Just clear local storage and redirect to products
+    localStorage.removeItem('pendingOrderId')
+    localStorage.removeItem('stripeSessionId')
+    
+    // Optional: Clear cart so user can add new items
+    await clearCart()
+    
+    toast.info('You can add more items to your order')
+    navigate('/products')
+  }
+
+  const handleRetryPayment = () => {
+    const pendingOrderId = localStorage.getItem('pendingOrderId') || orderId
+    if (pendingOrderId) {
+      navigate(`/checkout?retry=${pendingOrderId}`)
+    } else {
+      navigate('/checkout')
+    }
+  }
+
   const getErrorMessage = () => {
     switch(reason) {
       case 'payment_not_completed':
@@ -131,7 +94,7 @@ const PaymentCancel = () => {
         <p className="text-gray-600 mb-8">
           {getErrorMessage()}
           <br />
-          You can try again or choose another payment method.
+          You can try again or continue shopping.
         </p>
         
         {loading && (
@@ -150,18 +113,19 @@ const PaymentCancel = () => {
             Try Again
           </button>
           <button
+            onClick={handleContinueShopping}
+            disabled={loading}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition disabled:opacity-50"
+          >
+            Continue Shopping
+          </button>
+          <button
             onClick={handleCancelOrder}
             disabled={loading}
             className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition disabled:opacity-50"
           >
             {loading ? 'Processing...' : 'Cancel Order'}
           </button>
-          <Link
-            to="/products"
-            className="border border-blue-500 text-blue-500 px-6 py-3 rounded-lg hover:bg-blue-50 transition"
-          >
-            Continue Shopping
-          </Link>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ export const CartProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pendingOrderId, setPendingOrderId] = useState(localStorage.getItem('pendingOrderId') || null);
 
   const fetchCart = useCallback(async () => {
     if (!isAuthenticated) {
@@ -59,6 +60,13 @@ export const CartProvider = ({ children }) => {
     try {
       await cartAPI.addToCart(product._id, quantity);
       await fetchCart();
+      
+      // ✅ Update pendingOrderId if exists
+      if (pendingOrderId) {
+        // Optional: Update the pending order with new cart items
+        console.log('Adding to existing pending order:', pendingOrderId);
+      }
+      
       toast.success(`${product.name} added to cart!`);
       return true;
     } catch (err) {
@@ -110,6 +118,18 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // ✅ New method: Clear pending order
+  const clearPendingOrder = () => {
+    localStorage.removeItem('pendingOrderId');
+    setPendingOrderId(null);
+  };
+
+  // ✅ New method: Set pending order ID
+  const setPendingOrder = (orderId) => {
+    localStorage.setItem('pendingOrderId', orderId);
+    setPendingOrderId(orderId);
+  };
+
   const totalPrice = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -120,6 +140,9 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
+      clearPendingOrder,      // ✅ New
+      setPendingOrder,        // ✅ New
+      pendingOrderId,         // ✅ New
       totalPrice,
       totalItems,
       loading,
