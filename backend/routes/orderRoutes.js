@@ -235,55 +235,109 @@ router.post('/', protect, async (req, res) => {
   }
 })
 
-// ✅ Cancel order (User)
+// ==========================================
+// CANCEL ORDER (USER) - FIXED VERSION
+// ==========================================
+
+// ✅ Cancel order (User) - COMPLETELY FIXED
 router.put('/:id/cancel', protect, async (req, res) => {
   try {
-    const order = await Order.findOne({ 
-      _id: req.params.id, 
-      user: req.user._id
-    })
+    const orderId = req.params.id;
+    const userId = req.user._id;
+    
+    console.log(`🔄 Attempting to cancel order: ${orderId} for user: ${userId}`);
+    
+    // Fix: Use findById instead of findOne for better performance
+    const order = await Order.findById(orderId);
     
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' })
+      console.log(`❌ Order ${orderId} not found`);
+      return res.status(404).json({ 
+        success: false,
+        message: 'Order not found' 
+      });
     }
     
+    console.log(`📦 Order found - User: ${order.user}, Status: ${order.status}, Payment: ${order.paymentStatus}`);
+    
+    // Check if user owns this order
+    if (order.user.toString() !== userId.toString()) {
+      console.log(`❌ User ${userId} does not own order ${orderId}`);
+      return res.status(403).json({ 
+        success: false,
+        message: 'You are not authorized to cancel this order' 
+      });
+    }
+    
+    // Check if order is already cancelled
+    if (order.status === 'cancelled') {
+      console.log(`⚠️ Order ${orderId} is already cancelled`);
+      return res.status(400).json({ 
+        success: false,
+        message: 'Order is already cancelled' 
+      });
+    }
+    
+    // Check if order can be cancelled
     if (order.status === 'shipped') {
-      return res.status(400).json({ message: 'Order has been shipped and cannot be cancelled' })
+      return res.status(400).json({ 
+        success: false,
+        message: 'Order has been shipped and cannot be cancelled' 
+      });
     }
     
     if (order.status === 'delivered') {
-      return res.status(400).json({ message: 'Order has been delivered and cannot be cancelled' })
-    }
-    
-    if (order.status === 'cancelled') {
-      return res.status(400).json({ message: 'Order is already cancelled' })
+      return res.status(400).json({ 
+        success: false,
+        message: 'Order has been delivered and cannot be cancelled' 
+      });
     }
     
     if (order.status !== 'pending' && order.status !== 'processing') {
-      return res.status(400).json({ message: 'Order cannot be cancelled at this stage' })
+      return res.status(400).json({ 
+        success: false,
+        message: `Order cannot be cancelled at this stage. Current status: ${order.status}` 
+      });
     }
     
-    order.status = 'cancelled'
-    order.isRefunded = true
-    order.refundedAmount = order.totalAmount
-    order.refundedAt = new Date()
+    // Perform cancellation
+    order.status = 'cancelled';
+    order.isRefunded = true;
+    order.refundedAmount = order.totalAmount;
+    order.refundedAt = new Date();
     
+    // Handle payment status
     if (order.paymentStatus === 'paid') {
-      order.paymentStatus = 'refunded'
+      order.paymentStatus = 'refunded';
+    } else if (order.paymentStatus === 'pending') {
+      order.paymentStatus = 'cancelled';
     }
     
-    await order.save()
+    await order.save();
+    
+    console.log(`✅ Order ${orderId} cancelled successfully`);
     
     res.json({ 
+      success: true,
       message: order.paymentStatus === 'refunded' 
         ? 'Order cancelled and amount refunded successfully' 
-        : 'Order cancelled successfully', 
-      order 
-    })
+        : 'Order cancelled successfully',
+      order: {
+        _id: order._id,
+        status: order.status,
+        paymentStatus: order.paymentStatus
+      }
+    });
+    
   } catch (err) {
-    console.error('Error cancelling order:', err)
-    res.status(500).json({ message: err.message })
+    console.error('❌ Error cancelling order:', err.message);
+    console.error('Stack trace:', err.stack);
+    res.status(500).json({ 
+      success: false,
+      message: 'Internal server error while cancelling order',
+      error: err.message 
+    });
   }
-})
+});
 
 export default router

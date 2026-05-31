@@ -13,41 +13,55 @@ const PaymentCancel = () => {
   const { token } = useAuth()
   const { clearCart } = useCart()
   const [loading, setLoading] = useState(false)
-  
-  // ✅ Add flag to prevent multiple executions
   const hasProcessed = useRef(false)
   
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
   useEffect(() => {
     const cancelOrder = async () => {
-      // ✅ Prevent multiple executions
       if (hasProcessed.current) {
         console.log('Already processed, skipping...')
         return
       }
       
       if (orderId && token && !loading) {
-        hasProcessed.current = true  // ✅ Mark as processed immediately
+        hasProcessed.current = true
         setLoading(true)
         try {
-          await axios.put(
+          const response = await axios.put(
             `${API_URL}/api/orders/${orderId}/cancel`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           )
+          
+          // ✅ Check success flag from backend
+          if (response.data.success) {
+            localStorage.removeItem('pendingOrderId')
+            localStorage.removeItem('stripeSessionId')
+            await clearCart()
+            toast.success(response.data.message || 'Order cancelled successfully')
+          } else {
+            toast.error(response.data.message || 'Failed to cancel order')
+          }
+        } catch (error) {
+          console.error('Failed to cancel order:', error.response?.data || error.message)
+          
+          // ✅ Even if API fails, clear local state
           localStorage.removeItem('pendingOrderId')
           localStorage.removeItem('stripeSessionId')
           await clearCart()
-          // ✅ Show toast only once
-          toast.info('Order has been cancelled')
-        } catch (error) {
-          console.error('Failed to cancel order:', error)
-          // ✅ Show error toast only once
-          toast.error('Failed to cancel order')
+          
+          const errorMsg = error.response?.data?.message || 'Failed to cancel order'
+          toast.error(errorMsg)
         } finally {
           setLoading(false)
         }
+      } else if (orderId && !token) {
+        // No token - just clear local state
+        localStorage.removeItem('pendingOrderId')
+        localStorage.removeItem('stripeSessionId')
+        await clearCart()
+        toast.info('Please login to manage your orders')
       }
     }
     
@@ -64,27 +78,30 @@ const PaymentCancel = () => {
   }
 
   const handleCancelOrder = async () => {
-    // ✅ Prevent multiple manual cancellations
     if (loading) return
     
     const pendingOrderId = localStorage.getItem('pendingOrderId') || orderId
     if (pendingOrderId && token) {
       setLoading(true)
       try {
-        await axios.put(
+        const response = await axios.put(
           `${API_URL}/api/orders/${pendingOrderId}/cancel`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        localStorage.removeItem('pendingOrderId')
-        localStorage.removeItem('stripeSessionId')
         
-        await clearCart()
-        
-        toast.success('Order cancelled successfully')
-        navigate('/products')
+        if (response.data.success) {
+          localStorage.removeItem('pendingOrderId')
+          localStorage.removeItem('stripeSessionId')
+          await clearCart()
+          toast.success(response.data.message || 'Order cancelled successfully')
+          navigate('/products')
+        } else {
+          toast.error(response.data.message || 'Failed to cancel order')
+        }
       } catch (error) {
-        toast.error('Failed to cancel order')
+        const errorMsg = error.response?.data?.message || 'Failed to cancel order'
+        toast.error(errorMsg)
       } finally {
         setLoading(false)
       }
@@ -117,13 +134,20 @@ const PaymentCancel = () => {
           You can try again or choose another payment method.
         </p>
         
+        {loading && (
+          <div className="mb-4 text-blue-500">
+            <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></span>
+            Processing...
+          </div>
+        )}
+        
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handleRetryPayment}
             disabled={loading}
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
           >
-            {loading ? 'Processing...' : 'Try Again'}
+            Try Again
           </button>
           <button
             onClick={handleCancelOrder}
