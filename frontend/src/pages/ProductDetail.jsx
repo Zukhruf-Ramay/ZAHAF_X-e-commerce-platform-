@@ -108,12 +108,11 @@ const ProductDetail = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [product, getAllImages, isImageModalOpen])
 
+  // ✅ FIXED: Pass quantity directly instead of looping
   const handleAddToCart = () => {
     if (!product) return
     
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product)
-    }
+    addToCart(product, quantity)
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
   }
@@ -208,13 +207,13 @@ const ProductDetail = () => {
               <>
                 <button
                   onClick={() => setSelectedImage((prev) => (prev - 1 + images.length) % images.length)}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
+                  className="absolute left-2 top-1/2 transform translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
                 >
                   <i className="fas fa-chevron-left"></i>
                 </button>
                 <button
                   onClick={() => setSelectedImage((prev) => (prev + 1) % images.length)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
+                  className="absolute right-2 top-1/2 transform translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70"
                 >
                   <i className="fas fa-chevron-right"></i>
                 </button>
