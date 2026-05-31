@@ -124,6 +124,9 @@ export const sendPasswordResetOTP = async (email, name, otp) => {
 
 // Send order confirmation email
 export const sendOrderConfirmation = async (email, name, orderId, totalAmount) => {
+  // ✅ Fix: Handle both string and object for orderId
+  const orderIdStr = typeof orderId === 'object' ? (orderId._id || orderId.toString()) : orderId;
+  
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
       <h2 style="color: #2563eb; text-align: center;">ZAHAF X</h2>
@@ -131,7 +134,7 @@ export const sendOrderConfirmation = async (email, name, orderId, totalAmount) =
       <p>Dear ${name},</p>
       <p>Thank you for your order! Your order has been placed successfully.</p>
       <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 15px 0;">
-        <p><strong>Order ID:</strong> #${orderId.slice(-8)}</p>
+        <p><strong>Order ID:</strong> #${orderIdStr.slice(-8)}</p>
         <p><strong>Total Amount:</strong> Rs. ${totalAmount.toLocaleString()}</p>
       </div>
       <p>We'll notify you once your order is shipped.</p>
@@ -149,7 +152,7 @@ export const sendOrderConfirmation = async (email, name, orderId, totalAmount) =
     const { data, error } = await resend.emails.send({
       from: 'ZAHAF X <orders@zahafx.com>',
       to: [email],
-      subject: `Order Confirmation - #${orderId.slice(-8)}`,
+      subject: `Order Confirmation - #${orderIdStr.slice(-8)}`,
       html: html,
     });
 
@@ -164,6 +167,9 @@ export const sendOrderConfirmation = async (email, name, orderId, totalAmount) =
 
 // Send payment confirmation email
 export const sendPaymentConfirmation = async (email, name, orderId, amount, paymentMethod) => {
+  // ✅ Fix: Handle both string and object for orderId
+  const orderIdStr = typeof orderId === 'object' ? (orderId._id || orderId.toString()) : orderId;
+  
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
       <h2 style="color: #2563eb; text-align: center;">ZAHAF X</h2>
@@ -171,7 +177,7 @@ export const sendPaymentConfirmation = async (email, name, orderId, amount, paym
       <p>Dear ${name},</p>
       <p>Your payment has been successfully processed.</p>
       <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 15px 0;">
-        <p><strong>Order ID:</strong> #${orderId.slice(-8)}</p>
+        <p><strong>Order ID:</strong> #${orderIdStr.slice(-8)}</p>
         <p><strong>Amount Paid:</strong> Rs. ${amount.toLocaleString()}</p>
         <p><strong>Payment Method:</strong> ${paymentMethod}</p>
       </div>
@@ -184,7 +190,7 @@ export const sendPaymentConfirmation = async (email, name, orderId, amount, paym
     const { data, error } = await resend.emails.send({
       from: 'ZAHAF X <payments@zahafx.com>',
       to: [email],
-      subject: `Payment Confirmation - Order #${orderId.slice(-8)}`,
+      subject: `Payment Confirmation - Order #${orderIdStr.slice(-8)}`,
       html: html,
     });
 
@@ -203,7 +209,8 @@ export const sendOrderConfirmationEmail = async (order) => {
   const customerName = order.user?.name || 'Customer';
   if (!customerEmail) return false;
   
-  return sendOrderConfirmation(customerEmail, customerName, order._id, order.totalAmount);
+  // ✅ Pass the entire order object - the function will extract _id
+  return sendOrderConfirmation(customerEmail, customerName, order, order.totalAmount);
 };
 
 // Alias for payment receipt (used by paymentRoutes.js)
@@ -213,7 +220,8 @@ export const sendPaymentReceiptEmail = async (order, paymentDetails) => {
   if (!customerEmail) return false;
   
   const paymentMethod = paymentDetails?.cardBrand || 'Credit/Debit Card';
-  return sendPaymentConfirmation(customerEmail, customerName, order._id, order.totalAmount, paymentMethod);
+  // ✅ Pass the entire order object - the function will extract _id
+  return sendPaymentConfirmation(customerEmail, customerName, order, order.totalAmount, paymentMethod);
 };
 
 // Alias for order status update (used by orderRoutes.js)
