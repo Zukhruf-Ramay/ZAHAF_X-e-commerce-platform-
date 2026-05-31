@@ -16,8 +16,26 @@ const PaymentCancel = () => {
   
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
-  // ❌ REMOVED auto-cancel useEffect - Order will NOT cancel automatically
+  const handleRetryPayment = () => {
+    const pendingOrderId = localStorage.getItem('pendingOrderId') || orderId
+    if (pendingOrderId) {
+      navigate(`/checkout?retry=${pendingOrderId}`)
+    } else {
+      navigate('/checkout')
+    }
+  }
 
+  // ✅ Continue Shopping - Keeps cart and order
+  const handleContinueShopping = () => {
+    // ✅ Keep pendingOrderId - don't remove
+    // ✅ Keep cart items - don't clear
+    localStorage.removeItem('stripeSessionId')
+    
+    toast.info('You can add more items to your order')
+    navigate('/products')
+  }
+
+  // ✅ Cancel Order - Clear everything
   const handleCancelOrder = async () => {
     if (loading) return
     
@@ -25,51 +43,23 @@ const PaymentCancel = () => {
     if (pendingOrderId && token) {
       setLoading(true)
       try {
-        const response = await axios.put(
+        await axios.put(
           `${API_URL}/api/orders/${pendingOrderId}/cancel`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        
-        if (response.data.success) {
-          localStorage.removeItem('pendingOrderId')
-          localStorage.removeItem('stripeSessionId')
-          await clearCart()
-          toast.success(response.data.message || 'Order cancelled successfully')
-          navigate('/products')
-        } else {
-          toast.error(response.data.message || 'Failed to cancel order')
-        }
+        localStorage.removeItem('pendingOrderId')
+        localStorage.removeItem('stripeSessionId')
+        await clearCart()
+        toast.success('Order cancelled successfully')
+        navigate('/products')
       } catch (error) {
-        const errorMsg = error.response?.data?.message || 'Failed to cancel order'
-        toast.error(errorMsg)
+        toast.error('Failed to cancel order')
       } finally {
         setLoading(false)
       }
     } else {
       navigate('/products')
-    }
-  }
-
-  const handleContinueShopping = async () => {
-    // ✅ Keep the order active - don't cancel
-    // Just clear local storage and redirect to products
-    localStorage.removeItem('pendingOrderId')
-    localStorage.removeItem('stripeSessionId')
-    
-    // Optional: Clear cart so user can add new items
-    await clearCart()
-    
-    toast.info('You can add more items to your order')
-    navigate('/products')
-  }
-
-  const handleRetryPayment = () => {
-    const pendingOrderId = localStorage.getItem('pendingOrderId') || orderId
-    if (pendingOrderId) {
-      navigate(`/checkout?retry=${pendingOrderId}`)
-    } else {
-      navigate('/checkout')
     }
   }
 
@@ -126,6 +116,12 @@ const PaymentCancel = () => {
           >
             {loading ? 'Processing...' : 'Cancel Order'}
           </button>
+          <Link
+            to="/products"
+            className="border border-blue-500 text-blue-500 px-6 py-3 rounded-lg hover:bg-blue-50 transition"
+          >
+            Browse Products
+          </Link>
         </div>
       </div>
     </div>
