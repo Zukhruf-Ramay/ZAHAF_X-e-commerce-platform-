@@ -5,12 +5,12 @@ import { toast } from 'react-toastify'
 
 const ManageProducts = () => {
   const { user, token } = useAuth()
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
   
-  // Form state with multiple images and specifications
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -32,24 +32,22 @@ const ManageProducts = () => {
     },
     features: ['']
   })
-  const API_URL = 'http://localhost:5000/api/products'
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await axios.get(API_URL)
+      const res = await axios.get(`${API_URL}/api/products`)
       setProducts(res.data)
     } catch (err) {
       toast.error('Failed to load products')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [API_URL])
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
 
-  // Image handlers
   const addImageField = () => setForm(p => ({ ...p, images: [...p.images, ''] }))
   const removeImageField = (i) => setForm(p => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }))
   const updateImageUrl = (i, v) => setForm(p => {
@@ -62,11 +60,9 @@ const ManageProducts = () => {
     const fts = [...p.features]; fts[i] = v; return { ...p, features: fts }
   })
 
-  // Handle submit with custom auth
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      // Filter out empty images and features
       const submitData = {
         ...form,
         images: form.images.filter(img => img.trim() !== ''),
@@ -76,19 +72,13 @@ const ManageProducts = () => {
       }
       
       if (editing) {
-        await axios.put(`${API_URL}/${editing._id}`, submitData, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+        await axios.put(`${API_URL}/api/products/${editing._id}`, submitData, {
+          headers: { Authorization: `Bearer ${token}` }
         })
         toast.success('Product updated!')
       } else {
-        await axios.post(API_URL, submitData, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+        await axios.post(`${API_URL}/api/products`, submitData, {
+          headers: { Authorization: `Bearer ${token}` }
         })
         toast.success('Product added!')
       }
@@ -144,10 +134,8 @@ const ManageProducts = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Delete this product?')) {
       try {
-        await axios.delete(`${API_URL}/${id}`, {
-          headers: { 
-            Authorization: `Bearer ${token}`
-          }
+        await axios.delete(`${API_URL}/api/products/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
         })
         toast.success('Product deleted!')
         fetchProducts()
@@ -166,7 +154,7 @@ const ManageProducts = () => {
         <h1 className="text-2xl font-bold text-gray-800">
           <i className="fas fa-boxes mr-2 text-blue-500"></i> Manage Products
         </h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); resetForm() }} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-300">
+        <button onClick={() => { setShowForm(true); setEditing(null); resetForm() }} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           <i className="fas fa-plus mr-2"></i> Add Product
         </button>
       </div>
@@ -179,62 +167,35 @@ const ManageProducts = () => {
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-3">
-              {/* Basic Info */}
               <input type="text" placeholder="Product Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"/>
-              <textarea placeholder="Description" rows="3" value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+              <textarea placeholder="Description" rows="3" value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full border p-2 rounded"/>
               
               <div className="grid grid-cols-2 gap-3">
-                <input type="number" placeholder="Price (Rs.)" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                <input type="number" placeholder="Price (Rs.)" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required className="w-full border p-2 rounded"/>
                 <input type="text" placeholder="Category" value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full border p-2 rounded"/>
                 <input type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="w-full border p-2 rounded"/>
                 <input type="text" placeholder="Brand" value={form.brand} onChange={e => setForm({...form, brand: e.target.value})} className="w-full border p-2 rounded"/>
                 <input type="text" placeholder="Model" value={form.model} onChange={e => setForm({...form, model: e.target.value})} className="w-full border p-2 rounded"/>
               </div>
 
-              {/* Multiple Images Section */}
               <div className="border-t pt-3 mt-2">
-                <label className="font-semibold block mb-2">
-                  <i className="fas fa-images mr-2 text-blue-500"></i> Product Images (Multiple)
-                </label>
+                <label className="font-semibold block mb-2">Product Images (Multiple)</label>
                 {form.images.map((img, idx) => (
                   <div key={idx} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder={`Image URL ${idx + 1}`}
-                      value={img}
-                      onChange={(e) => updateImageUrl(idx, e.target.value)}
-                      className="flex-1 border p-2 rounded"
-                    />
-                    {idx > 0 && (
-                      <button type="button" onClick={() => removeImageField(idx)} className="bg-red-500 text-white px-3 rounded hover:bg-red-600">
-                        <i className="fas fa-times"></i>
-                      </button>
-                    )}
+                    <input type="text" placeholder={`Image URL ${idx + 1}`} value={img} onChange={(e) => updateImageUrl(idx, e.target.value)} className="flex-1 border p-2 rounded"/>
+                    {idx > 0 && <button type="button" onClick={() => removeImageField(idx)} className="bg-red-500 text-white px-3 rounded hover:bg-red-600">✕</button>}
                   </div>
                 ))}
-                <button type="button" onClick={addImageField} className="text-blue-500 text-sm hover:text-blue-600">
-                  <i className="fas fa-plus-circle mr-1"></i> Add Another Image
-                </button>
+                <button type="button" onClick={addImageField} className="text-blue-500 text-sm hover:text-blue-600">+ Add Another Image</button>
               </div>
 
-              {/* Main Image */}
               <div>
                 <label className="font-semibold block mb-1">Main/Thumbnail Image</label>
-                <input
-                  type="text"
-                  placeholder="Main image URL (used in product cards)"
-                  value={form.mainImage}
-                  onChange={e => setForm({ ...form, mainImage: e.target.value })}
-                  className="w-full border p-2 rounded"
-                />
-                <p className="text-xs text-gray-500 mt-1">If not provided, first image will be used</p>
+                <input type="text" placeholder="Main image URL" value={form.mainImage} onChange={e => setForm({ ...form, mainImage: e.target.value })} className="w-full border p-2 rounded"/>
               </div>
 
-              {/* Specifications */}
               <div className="border-t pt-3 mt-2">
-                <label className="font-semibold block mb-2">
-                  <i className="fas fa-microchip mr-2 text-blue-500"></i> Specifications
-                </label>
+                <label className="font-semibold block mb-2">Specifications</label>
                 <div className="grid grid-cols-2 gap-2">
                   <input type="text" placeholder="Processor" value={form.specifications.processor} onChange={e => setForm({...form, specifications: {...form.specifications, processor: e.target.value}})} className="border p-2 rounded text-sm"/>
                   <input type="text" placeholder="RAM" value={form.specifications.ram} onChange={e => setForm({...form, specifications: {...form.specifications, ram: e.target.value}})} className="border p-2 rounded text-sm"/>
@@ -245,79 +206,49 @@ const ManageProducts = () => {
                 </div>
               </div>
 
-              {/* Features */}
               <div className="border-t pt-3 mt-2">
-                <label className="font-semibold block mb-2">
-                  <i className="fas fa-list-check mr-2 text-blue-500"></i> Key Features
-                </label>
+                <label className="font-semibold block mb-2">Key Features</label>
                 {form.features.map((feature, idx) => (
                   <div key={idx} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder={`Feature ${idx + 1}`}
-                      value={feature}
-                      onChange={(e) => updateFeature(idx, e.target.value)}
-                      className="flex-1 border p-2 rounded"
-                    />
-                    {idx > 0 && (
-                      <button type="button" onClick={() => removeFeatureField(idx)} className="bg-red-500 text-white px-3 rounded hover:bg-red-600">
-                        <i className="fas fa-times"></i>
-                      </button>
-                    )}
+                    <input type="text" placeholder={`Feature ${idx + 1}`} value={feature} onChange={(e) => updateFeature(idx, e.target.value)} className="flex-1 border p-2 rounded"/>
+                    {idx > 0 && <button type="button" onClick={() => removeFeatureField(idx)} className="bg-red-500 text-white px-3 rounded hover:bg-red-600">✕</button>}
                   </div>
                 ))}
-                <button type="button" onClick={addFeatureField} className="text-blue-500 text-sm hover:text-blue-600">
-                  <i className="fas fa-plus-circle mr-1"></i> Add Feature
-                </button>
+                <button type="button" onClick={addFeatureField} className="text-blue-500 text-sm hover:text-blue-600">+ Add Feature</button>
               </div>
 
               <div className="flex gap-2 mt-4">
-                <button type="submit" className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition-all duration-300">
-                  <i className="fas fa-save mr-2"></i> {editing ? 'Update' : 'Save'}
-                </button>
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400 transition-all duration-300">
-                  <i className="fas fa-times mr-2"></i> Cancel
-                </button>
+                <button type="submit" className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">{editing ? 'Update' : 'Save'}</button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Cancel</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Products Table */}
       <div className="bg-white rounded-xl shadow overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left"><i className="fas fa-image mr-1"></i> Image</th>
-              <th className="px-4 py-3 text-left"><i className="fas fa-tag mr-1"></i> Name</th>
-              <th className="px-4 py-3 text-left"><i className="fas fa-building mr-1"></i> Brand</th>
-              <th className="px-4 py-3 text-left"><i className="fas fa-rupee-sign mr-1"></i> Price</th>
-              <th className="px-4 py-3 text-left"><i className="fas fa-boxes mr-1"></i> Stock</th>
-              <th className="px-4 py-3 text-left"><i className="fas fa-cog mr-1"></i> Actions</th>
+              <th className="px-4 py-3 text-left">Image</th>
+              <th className="px-4 py-3 text-left">Name</th>
+              <th className="px-4 py-3 text-left">Brand</th>
+              <th className="px-4 py-3 text-left">Price</th>
+              <th className="px-4 py-3 text-left">Stock</th>
+              <th className="px-4 py-3 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {products.map(product => (
               <tr key={product._id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <img 
-                    src={product.mainImage || (product.images?.[0]) || product.image || 'https://via.placeholder.com/40'} 
-                    alt="" 
-                    className="w-10 h-10 object-cover rounded"
-                  />
-                </td>
+                <td className="px-4 py-3"><img src={product.mainImage || (product.images?.[0]) || product.image || 'https://via.placeholder.com/40'} alt="" className="w-10 h-10 object-cover rounded"/></td>
                 <td className="px-4 py-3">{product.name}</td>
                 <td className="px-4 py-3">{product.brand || '-'}</td>
                 <td className="px-4 py-3">Rs. {product.price?.toLocaleString()}</td>
                 <td className="px-4 py-3">{product.stock}</td>
                 <td className="px-4 py-3">
-                  <button onClick={() => handleEdit(product)} className="text-blue-500 hover:text-blue-700 mr-3 transition-colors">
-                    <i className="fas fa-edit"></i>
-                  </button>
-                  <button onClick={() => handleDelete(product._id)} className="text-red-500 hover:text-red-700 transition-colors">
-                    <i className="fas fa-trash-alt"></i>
-                  </button>
+                  <button onClick={() => handleEdit(product)} className="text-blue-500 hover:text-blue-700 mr-3"><i className="fas fa-edit"></i></button>
+                  <button onClick={() => handleDelete(product._id)} className="text-red-500 hover:text-red-700"><i className="fas fa-trash-alt"></i></button>
                 </td>
               </tr>
             ))}
