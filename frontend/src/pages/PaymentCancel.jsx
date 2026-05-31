@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 const PaymentCancel = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const orderId = searchParams.get('order')
+  const orderId = searchParams.get('orderId')  // ✅ FIXED: Changed from 'order' to 'orderId'
   const reason = searchParams.get('reason')
   const { token } = useAuth()
   const { clearCart } = useCart()
