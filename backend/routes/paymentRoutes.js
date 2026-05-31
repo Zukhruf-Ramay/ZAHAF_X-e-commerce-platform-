@@ -40,8 +40,8 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${config.backendUrl}/api/payments/verify?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${config.backendUrl}/api/payments/cancel?orderId=${orderId}`,
+      success_url: `${config.frontendUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${config.frontendUrl}/payment-cancel?orderId=${orderId}`,
       metadata: { 
         orderId: order._id.toString(), 
         userId: userId.toString(),
@@ -121,7 +121,37 @@ router.get('/cancel', async (req, res) => {
   }
 });
 
-// Stripe Webhook - NO express.raw() here (handled in server.js)
+// NEW: Verify payment for frontend (returns JSON)
+router.get('/verify-payment', async (req, res) => {
+  try {
+    const { session_id } = req.query;
+    
+    if (!session_id) {
+      return res.status(400).json({ success: false, error: 'Missing session_id' });
+    }
+    
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    
+    if (session.payment_status === 'paid') {
+      const order = await Order.findById(session.metadata.orderId);
+      return res.json({ 
+        success: true, 
+        order: order,
+        paymentStatus: session.payment_status 
+      });
+    } else {
+      return res.json({ 
+        success: false, 
+        paymentStatus: session.payment_status 
+      });
+    }
+  } catch (error) {
+    console.error('Verify payment error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Stripe Webhook
 router.post('/webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;

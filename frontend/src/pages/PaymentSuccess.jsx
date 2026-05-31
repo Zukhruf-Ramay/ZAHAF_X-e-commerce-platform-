@@ -9,26 +9,24 @@ import { useOrders } from '../context/OrderContext'
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
-  const orderId = searchParams.get('id')
-  const { user, token } = useAuth()
+  const orderId = searchParams.get('order')
+  const { token } = useAuth()
   const { clearCart } = useCart()
   const { refreshOrders } = useOrders()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const processed = useRef(false)
 
-  // ✅ ADDED: API_URL for production compatibility
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
   useEffect(() => {
     const processPayment = async () => {
       if (processed.current) return
       
-      // Handle COD orders
+      // Handle COD orders (orderId from URL)
       if (orderId && !sessionId) {
         processed.current = true
         try {
-          // ✅ FIXED: Use API_URL
           const response = await axios.get(`${API_URL}/api/orders/${orderId}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
@@ -45,41 +43,30 @@ const PaymentSuccess = () => {
         return
       }
       
-      // Handle Stripe card payments (works with or without token)
+      // Handle Stripe card payments
       if (sessionId) {
         processed.current = true
         try {
-          // ✅ FIXED: Use API_URL
-          // Get order by session (no auth needed)
-          const response = await axios.get(`${API_URL}/api/payments/order-by-session/${sessionId}`)
-          const orderData = response.data
+          const verifyResponse = await axios.get(`${API_URL}/api/payments/verify-payment?session_id=${sessionId}`)
           
-          // If payment status is still pending, update it
-          if (orderData.paymentStatus !== 'paid') {
-            // ✅ FIXED: Use API_URL
-            await axios.post(`${API_URL}/api/payments/payment-success`, {
-              sessionId: sessionId
-            })
-            orderData.paymentStatus = 'paid'
-            orderData.status = 'processing'
+          if (verifyResponse.data.success) {
+            const orderData = verifyResponse.data.order
+            setOrder(orderData)
+            
+            if (token) {
+              await clearCart()
+              await refreshOrders()
+            }
+            
+            localStorage.removeItem('pendingOrderId')
+            localStorage.removeItem('stripeSessionId')
+            toast.success('Payment successful! Your order has been confirmed.')
+          } else {
+            toast.error('Payment verification failed')
           }
-          
-          setOrder(orderData)
-          
-          // Clear cart if user is logged in
-          if (token) {
-            await clearCart()
-            await refreshOrders()
-          }
-          
-          localStorage.removeItem('pendingOrderId')
-          localStorage.removeItem('stripeSessionId')
-          
-          toast.success('Payment successful! Your order has been confirmed.')
-          
         } catch (err) {
           console.error('Error:', err)
-          toast.error('Payment successful but something went wrong')
+          toast.error('Payment verification failed')
         } finally {
           setLoading(false)
         }
