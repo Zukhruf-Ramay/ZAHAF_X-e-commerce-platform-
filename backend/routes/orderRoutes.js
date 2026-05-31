@@ -1,8 +1,28 @@
 import express from 'express'
 import Order from '../models/Order.js'
+import Product from '../models/Product.js'  // ✅ ADD THIS
 import { protect, admin } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
+
+// ==========================================
+// HELPER FUNCTION - STOCK MANAGEMENT
+// ==========================================
+
+const updateProductStock = async (items, operation) => {
+  for (const item of items) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      if (operation === 'decrease') {
+        product.stock -= item.quantity;
+      } else if (operation === 'increase') {
+        product.stock += item.quantity;
+      }
+      await product.save();
+      console.log(`📦 Stock ${operation}d: ${product.name} (${item.quantity}) → New stock: ${product.stock}`);
+    }
+  }
+};
 
 // ==========================================
 // ADMIN ROUTES
@@ -48,7 +68,7 @@ router.get('/admin/:id', protect, admin, async (req, res) => {
   }
 })
 
-// ✅ Update order status (Admin only)
+// ✅ Update order status (Admin only) - WITH STOCK RESTORE ON CANCELLATION
 router.put('/:id/status', protect, admin, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
@@ -58,6 +78,13 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     }
     
     const newStatus = req.body.status
+    const oldStatus = order.status
+    
+    // ✅ If admin marks as cancelled, restore stock
+    if (newStatus === 'cancelled' && oldStatus !== 'cancelled') {
+      await updateProductStock(order.items, 'increase');
+      console.log(`✅ Stock restored for cancelled order ${order._id}`);
+    }
     
     order.status = newStatus
     
@@ -210,7 +237,7 @@ router.get('/:id', protect, async (req, res) => {
   }
 })
 
-// ✅ Create new order
+// ✅ Create new order - WITH STOCK DEDUCTION FOR COD
 router.post('/', protect, async (req, res) => {
   try {
     const orderData = { 
@@ -227,6 +254,11 @@ router.post('/', protect, async (req, res) => {
     const order = await Order.create(orderData)
     await order.populate('items.product')
     
+    // ✅ Decrease stock for COD orders immediately
+    if (orderData.paymentMethod === 'cod') {
+      await updateProductStock(order.items, 'decrease');
+    }
+    
     console.log(`✅ Order created: ${order._id} for user ${req.user._id}`)
     res.status(201).json(order)
   } catch (err) {
@@ -236,10 +268,10 @@ router.post('/', protect, async (req, res) => {
 })
 
 // ==========================================
-// CANCEL ORDER (USER) - FIXED VERSION
+// CANCEL ORDER (USER) - WITH STOCK RESTORE
 // ==========================================
 
-// ✅ Cancel order (User) - COMPLETELY FIXED
+// ✅ Cancel order (User) - Restores stock when cancelled
 router.put('/:id/cancel', protect, async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -247,7 +279,6 @@ router.put('/:id/cancel', protect, async (req, res) => {
     
     console.log(`🔄 Attempting to cancel order: ${orderId} for user: ${userId}`);
     
-    // Fix: Use findById instead of findOne for better performance
     const order = await Order.findById(orderId);
     
     if (!order) {
@@ -260,7 +291,6 @@ router.put('/:id/cancel', protect, async (req, res) => {
     
     console.log(`📦 Order found - User: ${order.user}, Status: ${order.status}, Payment: ${order.paymentStatus}`);
     
-    // Check if user owns this order
     if (order.user.toString() !== userId.toString()) {
       console.log(`❌ User ${userId} does not own order ${orderId}`);
       return res.status(403).json({ 
@@ -269,7 +299,6 @@ router.put('/:id/cancel', protect, async (req, res) => {
       });
     }
     
-    // Check if order is already cancelled
     if (order.status === 'cancelled') {
       console.log(`⚠️ Order ${orderId} is already cancelled`);
       return res.status(400).json({ 
@@ -278,7 +307,6 @@ router.put('/:id/cancel', protect, async (req, res) => {
       });
     }
     
-    // Check if order can be cancelled
     if (order.status === 'shipped') {
       return res.status(400).json({ 
         success: false,
@@ -300,13 +328,15 @@ router.put('/:id/cancel', protect, async (req, res) => {
       });
     }
     
+    // ✅ Restore stock when order is cancelled
+    await updateProductStock(order.items, 'increase');
+    
     // Perform cancellation
     order.status = 'cancelled';
     order.isRefunded = true;
     order.refundedAmount = order.totalAmount;
     order.refundedAt = new Date();
     
-    // Handle payment status
     if (order.paymentStatus === 'paid') {
       order.paymentStatus = 'refunded';
     } else if (order.paymentStatus === 'pending') {
@@ -315,7 +345,7 @@ router.put('/:id/cancel', protect, async (req, res) => {
     
     await order.save();
     
-    console.log(`✅ Order ${orderId} cancelled successfully`);
+    console.log(`✅ Order ${orderId} cancelled successfully - Stock restored`);
     
     res.json({ 
       success: true,
