@@ -7,11 +7,10 @@ import { toast } from 'react-toastify'
 import StripeCheckout from '../components/StripeCheckout'
 
 const Checkout = () => {
-  const { cartItems, totalPrice, clearCart } = useCart()
+  const { cartItems, totalPrice, clearCart, setPendingOrder, pendingOrderId } = useCart()
   const { user, token } = useAuth()
   const navigate = useNavigate()
   
-  // ✅ ADDED: API_URL for production compatibility
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
   
   const [form, setForm] = useState({
@@ -22,7 +21,7 @@ const Checkout = () => {
   const [touched, setTouched] = useState({})
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cod')
-  const [orderId, setOrderId] = useState(null)
+  const [orderId, setOrderId] = useState(pendingOrderId || null)
   const [creatingOrder, setCreatingOrder] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState(null)
   const [order, setOrder] = useState(null)
@@ -30,7 +29,6 @@ const Checkout = () => {
   
   const paymentInitiatedRef = useRef(false)
 
-  // Professional Price Calculation
   const subtotal = totalPrice
   const GST_RATE = 0.18
   const gstAmount = subtotal * GST_RATE
@@ -74,7 +72,6 @@ const Checkout = () => {
     return ''
   }
 
-  // Validate single field
   const validateField = (name, value) => {
     switch(name) {
       case 'email': return validateEmail(value)
@@ -86,7 +83,6 @@ const Checkout = () => {
     }
   }
 
-  // Check if form is valid (no errors and all fields filled)
   const checkFormValidity = (formValues, errorValues) => {
     const requiredFields = ['email', 'phone', 'street', 'city', 'zip']
     const allFieldsFilled = requiredFields.every(field => formValues[field]?.trim())
@@ -94,7 +90,6 @@ const Checkout = () => {
     return allFieldsFilled && noErrors
   }
 
-  // Handle input change with validation
   const handleChange = (e) => {
     const { name, value } = e.target
     const error = validateField(name, value)
@@ -103,7 +98,6 @@ const Checkout = () => {
     setErrors(prev => ({ ...prev, [name]: error }))
   }
 
-  // Handle blur for touch tracking
   const handleBlur = (e) => {
     const { name } = e.target
     setTouched(prev => ({ ...prev, [name]: true }))
@@ -111,12 +105,32 @@ const Checkout = () => {
     setErrors(prev => ({ ...prev, [name]: error }))
   }
 
-  // Update form validity whenever form or errors change
   useEffect(() => {
     setIsFormValid(checkFormValidity(form, errors))
   }, [form, errors])
 
-  // Check order status if orderId exists
+  // ✅ Check for existing pending order on load
+  useEffect(() => {
+    const checkPendingOrder = async () => {
+      if (pendingOrderId && token) {
+        try {
+          const res = await axios.get(`${API_URL}/api/orders/${pendingOrderId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          if (res.data.status === 'pending') {
+            setOrderId(pendingOrderId)
+            setOrder(res.data)
+            setPaymentStatus(res.data.paymentStatus)
+            toast.info('Continuing with your existing order')
+          }
+        } catch (err) {
+          console.error('Pending order not found:', err)
+        }
+      }
+    }
+    checkPendingOrder()
+  }, [pendingOrderId, token, API_URL])
+
   useEffect(() => {
     if (orderId && token) {
       checkOrderStatus()
@@ -125,7 +139,6 @@ const Checkout = () => {
 
   const checkOrderStatus = async () => {
     try {
-      // ✅ FIXED: Use API_URL
       const res = await axios.get(`${API_URL}/api/orders/${orderId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -136,7 +149,6 @@ const Checkout = () => {
     }
   }
 
-  // Helper to show error message
   const showError = (fieldName) => {
     return touched[fieldName] && errors[fieldName] ? (
       <p className="text-red-500 text-xs mt-1">{errors[fieldName]}</p>
@@ -197,13 +209,13 @@ const Checkout = () => {
     
     setCreatingOrder(true)
     try {
-      // ✅ FIXED: Use API_URL
       const orderResponse = await axios.post(`${API_URL}/api/orders`, 
         { ...createOrderData(), paymentMethod: 'card', paymentStatus: 'pending' },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       
       setOrderId(orderResponse.data._id)
+      setPendingOrder(orderResponse.data._id)  // ✅ Save pending order ID
       toast.success('Order created! Proceed to payment...')
       
     } catch (err) {
@@ -225,13 +237,11 @@ const Checkout = () => {
     
     setLoading(true)
     try {
-      // ✅ FIXED: Use API_URL
       const orderResponse = await axios.post(`${API_URL}/api/orders`, 
         { ...createOrderData(), paymentMethod: 'cod', paymentStatus: 'pending' },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       
-      // ✅ FIXED: Use API_URL
       await axios.delete(`${API_URL}/api/cart/clear`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -248,14 +258,14 @@ const Checkout = () => {
     }
   }
 
+  // ✅ Updated payment success handler - removed non-existent endpoint
   const handlePaymentSuccess = async (paymentData) => {
     if (paymentInitiatedRef.current) return
     paymentInitiatedRef.current = true
     
     try {
-      // ✅ FIXED: Use API_URL
-      await axios.post(`${API_URL}/api/payments/payment-success`, {
-        orderId: orderId,
+      // Update order with payment details directly
+      await axios.put(`${API_URL}/api/orders/${orderId}/payment-success`, {
         sessionId: paymentData?.sessionId,
         paymentDetails: {
           transactionId: paymentData?.paymentIntentId,
@@ -267,11 +277,12 @@ const Checkout = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
-      // ✅ FIXED: Use API_URL
       await axios.delete(`${API_URL}/api/cart/clear`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       clearCart()
+      
+      localStorage.removeItem('pendingOrderId')
       
       toast.success('🎉 Payment successful! Order confirmed.')
       navigate(`/order-success?id=${orderId}`)
@@ -290,8 +301,10 @@ const Checkout = () => {
     paymentInitiatedRef.current = false
   }
 
+  // ✅ Fixed: Redirect to payment-cancel page with orderId
   const handlePaymentCancel = () => {
-    toast.info('Payment cancelled')
+    toast.info('Payment cancelled. You can try again or continue shopping.')
+    navigate(`/payment-cancel?orderId=${orderId}`)
     paymentInitiatedRef.current = false
   }
 
@@ -304,10 +317,10 @@ const Checkout = () => {
   const handleCancelFailedOrder = async () => {
     if (window.confirm('Cancel this failed order? You can create a new order.')) {
       try {
-        // ✅ FIXED: Use API_URL
         await axios.put(`${API_URL}/api/orders/${orderId}/cancel`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
+        localStorage.removeItem('pendingOrderId')
         toast.success('Failed order cancelled')
         setOrderId(null)
         setOrder(null)
