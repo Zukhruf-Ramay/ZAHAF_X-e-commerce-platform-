@@ -87,18 +87,15 @@ router.get('/verify', async (req, res) => {
       
       console.log(`✅ Payment verified for order ${session.metadata.orderId}`);
       
-      // Redirect to PaymentSuccess page
       return res.redirect(`${config.frontendUrl}/payment-success?order=${session.metadata.orderId}`);
     } else {
       console.log(`⚠️ Payment not completed: ${session.payment_status}`);
       
-      // Redirect to PaymentCancel page
       return res.redirect(`${config.frontendUrl}/payment-cancel?reason=payment_not_completed`);
     }
   } catch (error) {
     console.error('Verification error:', error.message);
     
-    // Redirect to PaymentCancel page
     return res.redirect(`${config.frontendUrl}/payment-cancel?reason=verification_failed`);
   }
 });
@@ -116,24 +113,24 @@ router.get('/cancel', async (req, res) => {
       console.log(`❌ Payment cancelled for order ${orderId}`);
     }
     
-    // Redirect to PaymentCancel page
     return res.redirect(`${config.frontendUrl}/payment-cancel?order=${orderId || ''}`);
   } catch (error) {
     console.error('Cancel error:', error.message);
     
-    // Redirect to PaymentCancel page
     return res.redirect(`${config.frontendUrl}/payment-cancel`);
   }
 });
 
-// Stripe Webhook
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+// Stripe Webhook - NO express.raw() here (handled in server.js)
+router.post('/webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
   
   try {
+    const rawBody = req.rawBody || JSON.stringify(req.body);
+    
     event = stripe.webhooks.constructEvent(
-      req.body,
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
