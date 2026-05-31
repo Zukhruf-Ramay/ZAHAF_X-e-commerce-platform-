@@ -40,8 +40,9 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${config.frontendUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${config.frontendUrl}/payment-cancel?orderId=${orderId}`,
+      // ✅ FIXED: Redirect to backend verification first
+      success_url: `${config.backendUrl}/api/payments/verify?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${config.backendUrl}/api/payments/cancel?orderId=${orderId}`,
       metadata: { 
         orderId: order._id.toString(), 
         userId: userId.toString(),
@@ -61,25 +62,26 @@ router.post('/create-checkout-session', protect, async (req, res) => {
   }
 });
 
-// Verify payment success after Stripe redirect
+// ✅ Verify payment and redirect to frontend
 router.get('/verify', async (req, res) => {
   try {
     const { session_id } = req.query;
     
     if (!session_id) {
-      console.error('Missing session_id in verify request');
       return res.redirect(`${config.frontendUrl}/payment-cancel?reason=missing_session`);
     }
     
     const session = await stripe.checkout.sessions.retrieve(session_id);
     
     if (session.payment_status === 'paid') {
+      // Update order
       await Order.findByIdAndUpdate(session.metadata.orderId, {
         paymentStatus: 'completed',
         orderStatus: 'confirmed',
         stripePaymentIntentId: session.payment_intent
       });
       
+      // Clear cart
       await Cart.findOneAndUpdate(
         { user: session.metadata.userId },
         { items: [], totalPrice: 0 }
@@ -87,15 +89,13 @@ router.get('/verify', async (req, res) => {
       
       console.log(`✅ Payment verified for order ${session.metadata.orderId}`);
       
+      // ✅ Redirect to React frontend with order ID
       return res.redirect(`${config.frontendUrl}/payment-success?order=${session.metadata.orderId}`);
     } else {
-      console.log(`⚠️ Payment not completed: ${session.payment_status}`);
-      
       return res.redirect(`${config.frontendUrl}/payment-cancel?reason=payment_not_completed`);
     }
   } catch (error) {
     console.error('Verification error:', error.message);
-    
     return res.redirect(`${config.frontendUrl}/payment-cancel?reason=verification_failed`);
   }
 });
@@ -116,12 +116,11 @@ router.get('/cancel', async (req, res) => {
     return res.redirect(`${config.frontendUrl}/payment-cancel?orderId=${orderId || ''}`);
   } catch (error) {
     console.error('Cancel error:', error.message);
-    
     return res.redirect(`${config.frontendUrl}/payment-cancel`);
   }
 });
 
-// Verify payment for frontend (returns JSON)
+// ✅ API endpoint for React frontend to verify payment (returns JSON)
 router.get('/verify-payment', async (req, res) => {
   try {
     const { session_id } = req.query;
