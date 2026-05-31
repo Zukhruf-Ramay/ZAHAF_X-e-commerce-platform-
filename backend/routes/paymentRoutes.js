@@ -40,7 +40,6 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      // ✅ FIXED: Redirect to backend verification first
       success_url: `${config.backendUrl}/api/payments/verify?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${config.backendUrl}/api/payments/cancel?orderId=${orderId}`,
       metadata: { 
@@ -62,7 +61,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
   }
 });
 
-// ✅ Verify payment and redirect to frontend
+// Verify payment and redirect to frontend
 router.get('/verify', async (req, res) => {
   try {
     const { session_id } = req.query;
@@ -74,14 +73,13 @@ router.get('/verify', async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     
     if (session.payment_status === 'paid') {
-      // Update order
       await Order.findByIdAndUpdate(session.metadata.orderId, {
-        paymentStatus: 'completed',
+        paymentStatus: 'paid',
         orderStatus: 'confirmed',
-        stripePaymentIntentId: session.payment_intent
+        stripePaymentIntentId: session.payment_intent,
+        paidAt: new Date()
       });
       
-      // Clear cart
       await Cart.findOneAndUpdate(
         { user: session.metadata.userId },
         { items: [], totalPrice: 0 }
@@ -89,7 +87,6 @@ router.get('/verify', async (req, res) => {
       
       console.log(`✅ Payment verified for order ${session.metadata.orderId}`);
       
-      // ✅ Redirect to React frontend with order ID
       return res.redirect(`${config.frontendUrl}/payment-success?order=${session.metadata.orderId}`);
     } else {
       return res.redirect(`${config.frontendUrl}/payment-cancel?reason=payment_not_completed`);
@@ -106,11 +103,14 @@ router.get('/cancel', async (req, res) => {
     const { orderId } = req.query;
     
     if (orderId) {
+      const order = await Order.findById(orderId);
+      const paymentStatus = order?.paymentStatus === 'paid' ? 'refunded' : 'cancelled';
+      
       await Order.findByIdAndUpdate(orderId, {
-        paymentStatus: 'cancelled',
+        paymentStatus: paymentStatus,
         orderStatus: 'cancelled'
       });
-      console.log(`❌ Payment cancelled for order ${orderId}`);
+      console.log(`❌ Order ${orderId} cancelled - Payment status: ${paymentStatus}`);
     }
     
     return res.redirect(`${config.frontendUrl}/payment-cancel?orderId=${orderId || ''}`);
@@ -120,7 +120,7 @@ router.get('/cancel', async (req, res) => {
   }
 });
 
-// ✅ API endpoint for React frontend to verify payment (returns JSON)
+// API endpoint for React frontend to verify payment (returns JSON)
 router.get('/verify-payment', async (req, res) => {
   try {
     const { session_id } = req.query;
@@ -172,9 +172,10 @@ router.post('/webhook', async (req, res) => {
     const session = event.data.object;
     
     await Order.findByIdAndUpdate(session.metadata.orderId, {
-      paymentStatus: 'completed',
+      paymentStatus: 'paid',
       orderStatus: 'confirmed',
-      stripePaymentIntentId: session.payment_intent
+      stripePaymentIntentId: session.payment_intent,
+      paidAt: new Date()
     });
     
     await Cart.findOneAndUpdate(
