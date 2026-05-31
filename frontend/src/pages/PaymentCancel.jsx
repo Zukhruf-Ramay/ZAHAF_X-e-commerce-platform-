@@ -3,21 +3,32 @@ import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 const PaymentCancel = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const orderId = searchParams.get('orderId')  // ✅ FIXED: Changed from 'order' to 'orderId'
+  const orderId = searchParams.get('orderId')
   const reason = searchParams.get('reason')
   const { token } = useAuth()
   const { clearCart } = useCart()
   const [loading, setLoading] = useState(false)
+  
+  // ✅ Add flag to prevent multiple executions
+  const hasProcessed = useRef(false)
+  
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
   useEffect(() => {
     const cancelOrder = async () => {
+      // ✅ Prevent multiple executions
+      if (hasProcessed.current) {
+        console.log('Already processed, skipping...')
+        return
+      }
+      
       if (orderId && token && !loading) {
+        hasProcessed.current = true  // ✅ Mark as processed immediately
         setLoading(true)
         try {
           await axios.put(
@@ -28,9 +39,12 @@ const PaymentCancel = () => {
           localStorage.removeItem('pendingOrderId')
           localStorage.removeItem('stripeSessionId')
           await clearCart()
+          // ✅ Show toast only once
           toast.info('Order has been cancelled')
         } catch (error) {
           console.error('Failed to cancel order:', error)
+          // ✅ Show error toast only once
+          toast.error('Failed to cancel order')
         } finally {
           setLoading(false)
         }
@@ -50,6 +64,9 @@ const PaymentCancel = () => {
   }
 
   const handleCancelOrder = async () => {
+    // ✅ Prevent multiple manual cancellations
+    if (loading) return
+    
     const pendingOrderId = localStorage.getItem('pendingOrderId') || orderId
     if (pendingOrderId && token) {
       setLoading(true)

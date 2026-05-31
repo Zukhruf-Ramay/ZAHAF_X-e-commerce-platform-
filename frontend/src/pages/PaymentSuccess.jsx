@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import axios from 'axios'
@@ -8,24 +8,34 @@ import { useOrders } from '../context/OrderContext'
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams()
-  const orderId = searchParams.get('order')  // Get order ID from URL
+  const orderId = searchParams.get('order')
   const { token } = useAuth()
   const { clearCart } = useCart()
   const { refreshOrders } = useOrders()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // ✅ Add this flag to prevent multiple executions
+  const hasProcessed = useRef(false)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
   useEffect(() => {
     const fetchOrder = async () => {
+      // ✅ Prevent multiple executions
+      if (hasProcessed.current) {
+        console.log('Already processed, skipping...')
+        return
+      }
+      
       if (!orderId) {
         setLoading(false)
         return
       }
 
       try {
-        // Fetch order details
+        hasProcessed.current = true  // ✅ Mark as processed immediately
+        
         const response = await axios.get(`${API_URL}/api/orders/${orderId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
@@ -42,9 +52,11 @@ const PaymentSuccess = () => {
         localStorage.removeItem('pendingOrderId')
         localStorage.removeItem('stripeSessionId')
         
+        // ✅ Show toast only once
         toast.success('Payment successful! Your order has been confirmed.')
       } catch (err) {
         console.error('Error fetching order:', err)
+        // ✅ Show error toast only once
         toast.error('Unable to load order details')
       } finally {
         setLoading(false)
